@@ -1,0 +1,1961 @@
+openapi: 3.0.3
+
+info:
+  title: IDSC Portal - Faculty System API
+  description: >
+    PI for the IDSC Portal Faculty System.
+
+    The system allows faculty members to:
+    - View their assigned subjects and sections
+    - View students enrolled in their assigned subjects
+    - Manage student grades
+    - Manage student attendance
+    - View schedules
+    - View announcements
+
+    Dean users have authorization to manage:
+    - Faculty
+    - Courses
+    - Subjects
+    - Sections
+    - Faculty subject assignments
+    - Class Schedules
+    - Announcements
+    - Student grades
+    - Student attendance.
+  version: 1.3.0
+
+  license:
+    name: Academic Project License
+servers:
+- url: http://localhost:5000/api/v1
+  description: Local development server
+
+
+# =============================================================================
+# PATHS
+# =============================================================================
+
+paths:
+
+  # ===========================================================================
+  # HEALTH CHECK
+  # ===========================================================================
+
+  /health:
+    get:
+      tags:
+      - Health
+      summary: API health check
+      description: Returns the current health status of the API.
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - status
+                properties:
+                  status:
+                    type: string
+                    example: ok
+              example:
+                status: ok
+
+  # ===========================================================================
+  # FACULTY MANAGEMENT
+  # ===========================================================================
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+      operationId: getHealth
+      security: []
+  /faculty:
+    get:
+      tags:
+      - Faculty Management
+      summary: Get all faculty members
+      x-roles:
+      - DEAN
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: List of faculty members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacultyItem'
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+
+      operationId: getFaculty
+    post:
+      tags:
+      - Faculty Management
+      summary: Add a new faculty member
+      x-roles:
+      - DEAN
+      description: Allows an authorized Dean to add a new faculty member.
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewFacultyPayload'
+      responses:
+        '201':
+          description: Faculty member successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FacultyItem'
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+
+      operationId: createFaculty
+  /faculty/{facultyId}:
+    get:
+      tags:
+      - Faculty Management
+      summary: Get faculty member by ID
+      x-roles:
+      - DEAN
+      - FACULTY
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/FacultyId'
+      responses:
+        '200':
+          description: Faculty information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FacultyItem'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+      operationId: getFacultyById
+    put:
+      tags:
+      - Faculty Management
+      summary: Update faculty information
+      x-roles:
+      - DEAN
+      description: >
+        Allows an authorized Dean to update faculty information,
+        including employment status.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/FacultyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewFacultyPayload'
+      responses:
+        '200':
+          description: Faculty information successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FacultyItem'
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+  # ===========================================================================
+  # FACULTY SALARY
+  # ===========================================================================
+
+      operationId: updateFaculty
+  /faculty/{facultyId}/salary:
+    get:
+      tags:
+      - Faculty Salary
+      summary: Get faculty salary
+      x-roles:
+      - DEAN
+      - FACULTY
+      description: >
+        Returns salary information based on the faculty member's
+        employment type.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/FacultyId'
+      responses:
+        '200':
+          description: Faculty salary information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalaryItem'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+  # ===========================================================================
+  # FACULTY SUBJECT ASSIGNMENTS
+  # ===========================================================================
+
+      operationId: getFacultySalary
+  /faculty/{facultyId}/subjects:
+    get:
+      tags:
+      - Faculty Subject Assignments
+      summary: Get subjects assigned to faculty
+      x-roles:
+      - DEAN
+      - FACULTY
+      description: >
+        Returns all subject assignments of a specific faculty member.
+        Each assignment represents a specific subject, section, semester,
+        and academic year.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/FacultyId'
+      responses:
+        '200':
+          description: List of subjects assigned to the faculty
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AssignedSubjectItem'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+      operationId: getFacultySubjects
+    post:
+      tags:
+      - Faculty Subject Assignments
+      summary: Assign a subject to faculty
+      x-roles:
+      - DEAN
+      description: >
+        Allows an authorized Dean to assign a subject/course to a faculty
+        member. The subject must already exist in the course management system.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/FacultyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignSubjectPayload'
+      responses:
+        '201':
+          description: Subject successfully assigned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssignedSubjectItem'
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+        '409':
+          description: Subject is already assigned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+      operationId: assignFacultySubject
+  /faculty/{facultyId}/subjects/{courseCode}:
+    delete:
+      tags:
+      - Faculty Subject Assignments
+      summary: Remove assigned subject from faculty
+      x-roles:
+      - DEAN
+      description: >
+        Removes the faculty assignment. This does not delete the course.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/FacultyId'
+      - $ref: '#/components/parameters/CourseCode'
+      responses:
+        '204':
+          description: Subject assignment successfully removed
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+  # ===========================================================================
+  # COURSE MANAGEMENT
+  # ===========================================================================
+
+      operationId: removeFacultySubject
+  /courses:
+    get:
+      tags:
+      - Course Management
+      summary: Get all courses
+      x-roles:
+      - DEAN
+      - FACULTY
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CourseItem'
+
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+      operationId: getCourses
+    post:
+      tags:
+      - Course Management
+      summary: Create a new course
+      x-roles:
+      - DEAN
+      description: Allows an authorized Dean to create a new course.
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewCoursePayload'
+      responses:
+        '201':
+          description: Course successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseItem'
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+
+      operationId: createCourse
+  /courses/{courseCode}:
+    get:
+      tags:
+      - Course Management
+      summary: Get course by code
+      x-roles:
+      - DEAN
+      - FACULTY
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CourseCode'
+      responses:
+        '200':
+          description: Course information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseItem'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+      operationId: getCourseByCode
+    put:
+      tags:
+      - Course Management
+      summary: Update course
+      x-roles:
+      - DEAN
+      description: Allows an authorized Dean to update course information.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CourseCode'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewCoursePayload'
+      responses:
+        '200':
+          description: Course successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseItem'
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+      operationId: updateCourse
+    delete:
+      tags:
+      - Course Management
+      summary: Delete course
+      x-roles:
+      - DEAN
+      description: >
+        Removes a course. For courses with historical records,
+        marking the course INACTIVE is recommended.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CourseCode'
+      responses:
+        '204':
+          description: Course successfully deleted
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+  # ===========================================================================
+  # FACULTY COURSES
+  # ===========================================================================
+
+      operationId: deleteCourse
+  /faculty/{facultyId}/courses:
+    get:
+      tags:
+      - Course Management
+      summary: Get courses assigned to faculty
+      x-roles:
+      - DEAN
+      - FACULTY
+      description: >
+        Returns all course assignments of the faculty member.
+        Assignment information includes section, semester,
+        and academic year.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/FacultyId'
+      responses:
+        '200':
+          description: Faculty course assignments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacultyCourseItem'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+  # ===========================================================================
+  # ENROLLED STUDENTS
+  # ===========================================================================
+
+      operationId: getFacultyCourses
+  /faculty/{facultyId}/courses/{courseCode}/students:
+    get:
+      tags:
+      - Enrolled Students
+      summary: Get students enrolled in assigned subject
+      x-roles:
+      - DEAN
+      - FACULTY
+      description: >
+        Returns students enrolled in the specific subject assignment
+        handled by the faculty member.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/FacultyId'
+      - $ref: '#/components/parameters/CourseCode'
+      - $ref: '#/components/parameters/Section'
+      - $ref: '#/components/parameters/Semester'
+      - $ref: '#/components/parameters/AcademicYear'
+      responses:
+        '200':
+          description: List of enrolled students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StudentItem'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+  # ===========================================================================
+  # STUDENT GRADES
+  # ===========================================================================
+
+      operationId: getEnrolledStudents
+  /faculty/{facultyId}/courses/{courseCode}/students/{studentId}/grade:
+    post:
+      tags:
+      - Student Grades
+      summary: Add student grade
+      x-roles:
+      - DEAN
+      - FACULTY
+      description: >
+        Adds a grade for a student enrolled in the specific faculty
+        subject assignment.
+
+        The assignmentId identifies the exact subject offering being graded.
+        This prevents a grade from being attached only to a generic course.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/FacultyId'
+      - $ref: '#/components/parameters/CourseCode'
+      - $ref: '#/components/parameters/StudentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GradePayload'
+            example:
+              assignmentId: "ASG-001"
+              grade: 1.75
+      responses:
+        '201':
+          description: Grade successfully added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GradeItem'
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+        '409':
+          description: Grade already exists for this student and subject assignment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+      operationId: createStudentGrade
+    put:
+      tags:
+      - Student Grades
+      summary: Update student grade
+      x-roles:
+      - DEAN
+      - FACULTY
+      description: >
+        Updates the grade of a student for a specific faculty
+        subject assignment.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/FacultyId'
+      - $ref: '#/components/parameters/CourseCode'
+      - $ref: '#/components/parameters/StudentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GradePayload'
+            example:
+              assignmentId: "ASG-001"
+              grade: 1.50
+      responses:
+        '200':
+          description: Grade successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GradeItem'
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+      operationId: updateStudentGrade
+    get:
+      tags:
+      - Student Grades
+      summary: Get student grade for assigned subject
+      x-roles:
+      - DEAN
+      - FACULTY
+      description: >
+        Returns the student's grade for a specific faculty subject assignment.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/FacultyId'
+      - $ref: '#/components/parameters/CourseCode'
+      - $ref: '#/components/parameters/StudentId'
+      responses:
+        '200':
+          description: Student grade
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GradeItem'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+  # ===========================================================================
+  # GRADES FOR A COMPLETE SUBJECT
+  # ===========================================================================
+
+      operationId: getStudentGrade
+  /faculty/{facultyId}/subjects/{assignmentId}/grades:
+    get:
+      tags:
+      - Student Grades
+      summary: Get all student grades for a subject assignment
+      x-roles:
+      - DEAN
+      - FACULTY
+      description: >
+        Returns all grades for students enrolled in a specific faculty
+        subject assignment.
+
+        The assignmentId connects the grades directly to the faculty's
+        assigned subject, section, semester, and academic year.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/FacultyId'
+      - $ref: '#/components/parameters/AssignmentId'
+      responses:
+        '200':
+          description: List of grades for the assigned subject
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GradeItem'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+  # ===========================================================================
+  # CLASS SCHEDULE MANAGEMENT
+  # ===========================================================================
+
+      operationId: getAssignmentGrades
+  /schedules:
+    get:
+      tags:
+      - Class Schedules
+      summary: Get all class schedules
+      x-roles:
+      - DEAN
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: List of class schedules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScheduleItem'
+
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+      operationId: getSchedules
+    post:
+      tags:
+      - Class Schedules
+      summary: Create class schedule
+      x-roles:
+      - DEAN
+      description: Allows an authorized Dean to create a class schedule.
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchedulePayload'
+      responses:
+        '201':
+          description: Schedule successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleItem'
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+
+      operationId: createSchedule
+  /schedules/{scheduleId}:
+    get:
+      tags:
+      - Class Schedules
+      summary: Get schedule by ID
+      x-roles:
+      - DEAN
+      - FACULTY
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/ScheduleId'
+      responses:
+        '200':
+          description: Schedule information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleItem'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+      operationId: getScheduleById
+    put:
+      tags:
+      - Class Schedules
+      summary: Update class schedule
+      x-roles:
+      - DEAN
+      description: Allows an authorized Dean to update a class schedule.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/ScheduleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchedulePayload'
+      responses:
+        '200':
+          description: Schedule successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleItem'
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+      operationId: updateSchedule
+  /faculty/{facultyId}/schedule:
+    get:
+      tags:
+      - Class Schedules
+      summary: Get faculty schedule
+      x-roles:
+      - DEAN
+      - FACULTY
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/FacultyId'
+      responses:
+        '200':
+          description: Faculty teaching schedule
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScheduleItem'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+  # ===========================================================================
+  # ANNOUNCEMENTS
+  # ===========================================================================
+
+      operationId: getFacultySchedule
+  /announcements:
+    get:
+      tags:
+      - Announcements
+      summary: Get all announcements
+      x-roles:
+      - DEAN
+      - FACULTY
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: List of announcements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnnouncementItem'
+
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+      operationId: getAnnouncements
+    post:
+      tags:
+      - Announcements
+      summary: Create announcement
+      x-roles:
+      - DEAN
+      description: Allows an authorized Dean to create an announcement.
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnnouncementPayload'
+      responses:
+        '201':
+          description: Announcement successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnnouncementItem'
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+
+      operationId: createAnnouncement
+  /announcements/{announcementId}:
+    get:
+      tags:
+      - Announcements
+      summary: Get announcement by ID
+      x-roles:
+      - DEAN
+      - FACULTY
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AnnouncementId'
+      responses:
+        '200':
+          description: Announcement information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnnouncementItem'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+      operationId: getAnnouncementById
+    put:
+      tags:
+      - Announcements
+      summary: Update announcement
+      x-roles:
+      - DEAN
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AnnouncementId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnnouncementPayload'
+      responses:
+        '200':
+          description: Announcement successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnnouncementItem'
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+      operationId: updateAnnouncement
+    delete:
+      tags:
+      - Announcements
+      summary: Delete announcement
+      x-roles:
+      - DEAN
+      description: Allows an authorized Dean to delete an announcement.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AnnouncementId'
+      responses:
+        '204':
+          description: Announcement successfully deleted
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+# =============================================================================
+# COMPONENTS
+# =============================================================================
+
+      operationId: deleteAnnouncement
+components:
+
+  # ===========================================================================
+  # AUTHENTICATION
+  # ===========================================================================
+
+  securitySchemes:
+
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        JWT authentication identifies the logged-in faculty member
+        and determines their role and permissions.
+
+
+  # ===========================================================================
+  # PARAMETERS
+  # ===========================================================================
+
+  parameters:
+
+    FacultyId:
+      name: facultyId
+      in: path
+      required: true
+      description: Unique ID of the faculty member.
+      schema:
+        type: string
+        example: "FAC-2026-001"
+
+
+    CourseCode:
+      name: courseCode
+      in: path
+      required: true
+      description: Unique code of the subject/course.
+      schema:
+        type: string
+        example: "IT303"
+
+
+    AssignmentId:
+      name: assignmentId
+      in: path
+      required: true
+      description: >
+        Unique ID of the faculty subject assignment. This identifies
+        the exact subject, section, semester, and academic year.
+      schema:
+        type: string
+        example: "ASG-001"
+
+
+    StudentId:
+      name: studentId
+      in: path
+      required: true
+      description: Unique ID of the student.
+      schema:
+        type: string
+        example: "202610897"
+
+
+    Section:
+      name: section
+      in: query
+      required: true
+      description: Class section.
+      schema:
+        type: string
+        example: "BSIT-3A"
+
+
+    Semester:
+      name: semester
+      in: query
+      required: true
+      description: Academic semester.
+      schema:
+        type: string
+        example: "1st Semester"
+
+
+    AcademicYear:
+      name: academicYear
+      in: query
+      required: true
+      description: Academic year.
+      schema:
+        type: string
+        example: "2026-2027"
+
+
+    ScheduleId:
+      name: scheduleId
+      in: path
+      required: true
+      description: Unique ID of the schedule.
+      schema:
+        type: string
+        example: "SCH-001"
+
+
+    AnnouncementId:
+      name: announcementId
+      in: path
+      required: true
+      description: Unique ID of the announcement.
+      schema:
+        type: string
+        example: "ANN-001"
+
+
+  # ===========================================================================
+  # SCHEMAS
+  # ===========================================================================
+
+  schemas:
+
+    # =========================================================================
+    # FACULTY
+    # =========================================================================
+
+    FacultyItem:
+      type: object
+      required:
+      - facultyId
+      - name
+      - department
+      - position
+      - employmentType
+      - employmentStatus
+
+      properties:
+
+        facultyId:
+          type: string
+          example: "FAC-2026-001"
+
+        name:
+          type: string
+          example: "Maria Dela Cruz"
+
+        email:
+          type: string
+          format: email
+          example: "maria.delacruz@university.edu"
+
+        department:
+          type: string
+          example: "Information Technology"
+
+        position:
+          type: string
+          enum:
+          - FACULTY
+          - PROGRAM_HEAD
+          - DEAN
+          example: "DEAN"
+
+        employmentType:
+          type: string
+          enum:
+          - FULL_TIME
+          - PART_TIME
+          - OTHER
+          example: "FULL_TIME"
+
+        specialization:
+          type: string
+          example: "Web Development"
+
+        employmentStatus:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          - RESIGNED
+          - ON_LEAVE
+          example: "ACTIVE"
+
+        assignedSubjects:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssignedSubjectItem'
+
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2026-09-05T10:30:00Z"
+
+
+    NewFacultyPayload:
+      type: object
+      required:
+      - facultyId
+      - name
+      - department
+      - position
+      - employmentType
+
+      properties:
+
+        facultyId:
+          type: string
+          example: "FAC-2026-001"
+
+        name:
+          type: string
+          example: "Maria Dela Cruz"
+
+        email:
+          type: string
+          format: email
+          example: "maria.delacruz@university.edu"
+
+        department:
+          type: string
+          example: "Information Technology"
+
+        position:
+          type: string
+          enum:
+          - FACULTY
+          - PROGRAM_HEAD
+          - DEAN
+          example: "FACULTY"
+
+        employmentType:
+          type: string
+          enum:
+          - FULL_TIME
+          - PART_TIME
+          - OTHER
+          example: "FULL_TIME"
+
+        specialization:
+          type: string
+          example: "Web Development"
+
+        employmentStatus:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          - RESIGNED
+          - ON_LEAVE
+          example: "ACTIVE"
+
+
+    # =========================================================================
+    # SUBJECT ASSIGNMENT
+    # =========================================================================
+
+    AssignedSubjectItem:
+      type: object
+      required:
+      - assignmentId
+      - facultyId
+      - courseCode
+      - courseName
+      - section
+      - semester
+      - academicYear
+      - assignmentStatus
+
+      properties:
+
+        assignmentId:
+          type: string
+          description: >
+            Unique ID of this subject offering/assignment.
+            Grades are connected to this ID.
+          example: "ASG-001"
+
+        facultyId:
+          type: string
+          example: "FAC-2026-001"
+
+        courseCode:
+          type: string
+          example: "IT303"
+
+        courseName:
+          type: string
+          example: "Integrative Programming 2"
+
+        units:
+          type: integer
+          example: 3
+
+        section:
+          type: string
+          example: "BSIT-3A"
+
+        semester:
+          type: string
+          example: "1st Semester"
+
+        academicYear:
+          type: string
+          example: "2026-2027"
+
+        assignmentStatus:
+          type: string
+          enum:
+          - ASSIGNED
+          - COMPLETED
+          - CANCELLED
+          example: "ASSIGNED"
+
+        assignedAt:
+          type: string
+          format: date-time
+          example: "2026-09-05T09:00:00Z"
+
+
+    AssignSubjectPayload:
+      type: object
+      required:
+      - courseCode
+      - section
+      - semester
+      - academicYear
+
+      properties:
+
+        courseCode:
+          type: string
+          example: "IT303"
+
+        section:
+          type: string
+          example: "BSIT-3A"
+
+        semester:
+          type: string
+          example: "1st Semester"
+
+        academicYear:
+          type: string
+          example: "2026-2027"
+
+
+    # =========================================================================
+    # FACULTY COURSE
+    # =========================================================================
+
+    FacultyCourseItem:
+      type: object
+      required:
+      - assignmentId
+      - facultyId
+      - courseCode
+      - courseName
+      - section
+      - semester
+      - academicYear
+
+      properties:
+
+        assignmentId:
+          type: string
+          example: "ASG-001"
+
+        facultyId:
+          type: string
+          example: "FAC-2026-001"
+
+        courseCode:
+          type: string
+          example: "IT303"
+
+        courseName:
+          type: string
+          example: "Integrative Programming 2"
+
+        units:
+          type: integer
+          example: 3
+
+        section:
+          type: string
+          example: "BSIT-3A"
+
+        semester:
+          type: string
+          example: "1st Semester"
+
+        academicYear:
+          type: string
+          example: "2026-2027"
+
+
+    # =========================================================================
+    # SALARY
+    # =========================================================================
+
+    SalaryItem:
+      type: object
+      required:
+      - facultyId
+      - employmentType
+      - salary
+
+      properties:
+
+        facultyId:
+          type: string
+          example: "FAC-2026-001"
+
+        employmentType:
+          type: string
+          enum:
+          - FULL_TIME
+          - PART_TIME
+          - OTHER
+          example: "FULL_TIME"
+
+        salary:
+          type: number
+          format: float
+          example: 45000.00
+
+        currency:
+          type: string
+          example: "PHP"
+
+        effectiveDate:
+          type: string
+          format: date
+          example: "2026-09-01"
+
+
+    # =========================================================================
+    # COURSES
+    # =========================================================================
+
+    CourseItem:
+      type: object
+      required:
+      - courseCode
+      - courseName
+      - units
+      - status
+
+      properties:
+
+        courseCode:
+          type: string
+          example: "IT303"
+
+        courseName:
+          type: string
+          example: "Integrative Programming 2"
+
+        description:
+          type: string
+          example: "Development of web-based applications."
+
+        units:
+          type: integer
+          example: 3
+
+        department:
+          type: string
+          example: "Information Technology"
+
+        semester:
+          type: string
+          example: "1st Semester"
+
+        academicYear:
+          type: string
+          example: "2026-2027"
+
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          example: "ACTIVE"
+
+
+    NewCoursePayload:
+      type: object
+      required:
+      - courseCode
+      - courseName
+      - units
+
+      properties:
+
+        courseCode:
+          type: string
+          example: "IT303"
+
+        courseName:
+          type: string
+          example: "Integrative Programming 2"
+
+        description:
+          type: string
+          example: "Development of web-based applications."
+
+        units:
+          type: integer
+          example: 3
+
+        department:
+          type: string
+          example: "Information Technology"
+
+        semester:
+          type: string
+          example: "1st Semester"
+
+        academicYear:
+          type: string
+          example: "2026-2027"
+
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          example: "ACTIVE"
+
+
+    # =========================================================================
+    # STUDENTS
+    # =========================================================================
+
+    StudentItem:
+      type: object
+      required:
+      - studentId
+      - name
+      - program
+      - yearLevel
+      - section
+      - enrollmentStatus
+
+      properties:
+
+        studentId:
+          type: string
+          example: "202610897"
+
+        name:
+          type: string
+          example: "Juan Santos"
+
+        program:
+          type: string
+          example: "BSIT"
+
+        yearLevel:
+          type: integer
+          example: 3
+
+        section:
+          type: string
+          example: "BSIT-3A"
+
+        enrollmentStatus:
+          type: string
+          enum:
+          - ENROLLED
+          - DROPPED
+          - COMPLETED
+          example: "ENROLLED"
+
+
+    # =========================================================================
+    # GRADES
+    # =========================================================================
+
+    GradeItem:
+      type: object
+      required:
+      - assignmentId
+      - facultyId
+      - studentId
+      - courseCode
+      - courseName
+      - section
+      - semester
+      - academicYear
+      - grade
+      - status
+
+      properties:
+
+        assignmentId:
+          type: string
+          description: >
+            Connects this grade to the exact faculty subject assignment.
+          example: "ASG-001"
+
+        facultyId:
+          type: string
+          description: Faculty member who teaches the subject.
+          example: "FAC-2026-001"
+
+        studentId:
+          type: string
+          example: "202610897"
+
+        courseCode:
+          type: string
+          example: "IT303"
+
+        courseName:
+          type: string
+          example: "Integrative Programming 2"
+
+        section:
+          type: string
+          example: "BSIT-3A"
+
+        semester:
+          type: string
+          example: "1st Semester"
+
+        academicYear:
+          type: string
+          example: "2026-2027"
+
+        grade:
+          type: number
+          format: float
+          description: Final grade for the subject.
+          example: 1.75
+
+        status:
+          type: string
+          enum:
+          - POSTED
+          - UPDATED
+          example: "POSTED"
+
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2026-09-05T10:30:00Z"
+
+
+    GradePayload:
+      type: object
+      required:
+      - assignmentId
+      - grade
+
+      properties:
+
+        assignmentId:
+          type: string
+          description: >
+            The subject assignment where the grade belongs.
+            This connects the grade to the faculty's assigned subject.
+          example: "ASG-001"
+
+        grade:
+          type: number
+          format: float
+          description: Grade entered by the faculty member.
+          example: 1.75
+
+
+    # =========================================================================
+    # CLASS SCHEDULES
+    # =========================================================================
+
+    ScheduleItem:
+      type: object
+      required:
+      - scheduleId
+      - facultyId
+      - courseCode
+      - section
+      - day
+      - startTime
+      - endTime
+
+      properties:
+
+        scheduleId:
+          type: string
+          example: "SCH-001"
+
+        facultyId:
+          type: string
+          example: "FAC-2026-001"
+
+        courseCode:
+          type: string
+          example: "IT303"
+
+        section:
+          type: string
+          example: "BSIT-3A"
+
+        day:
+          type: string
+          example: "Monday"
+
+        startTime:
+          type: string
+          example: "07:00"
+
+        endTime:
+          type: string
+          example: "10:00"
+
+        room:
+          type: string
+          example: "ICT-204"
+
+
+    SchedulePayload:
+      type: object
+      required:
+      - facultyId
+      - courseCode
+      - section
+      - day
+      - startTime
+      - endTime
+
+      properties:
+
+        facultyId:
+          type: string
+          example: "FAC-2026-001"
+
+        courseCode:
+          type: string
+          example: "IT303"
+
+        section:
+          type: string
+          example: "BSIT-3A"
+
+        day:
+          type: string
+          example: "Monday"
+
+        startTime:
+          type: string
+          example: "07:00"
+
+        endTime:
+          type: string
+          example: "10:00"
+
+        room:
+          type: string
+          example: "ICT-204"
+
+
+    # =========================================================================
+    # ANNOUNCEMENTS
+    # =========================================================================
+
+    AnnouncementItem:
+      type: object
+      required:
+      - announcementId
+      - title
+      - content
+      - postedBy
+
+      properties:
+
+        announcementId:
+          type: string
+          example: "ANN-001"
+
+        title:
+          type: string
+          example: "Faculty Meeting"
+
+        content:
+          type: string
+          example: >
+            There will be a faculty meeting on Monday at 9:00 AM.
+
+        postedBy:
+          type: string
+          example: "FAC-2026-001"
+
+        postedByPosition:
+          type: string
+          example: "DEAN"
+
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-09-05T08:00:00Z"
+
+
+    AnnouncementPayload:
+      type: object
+      required:
+      - title
+      - content
+      - postedBy
+
+      properties:
+
+        title:
+          type: string
+          example: "Faculty Meeting"
+
+        content:
+          type: string
+          example: >
+            There will be a faculty meeting on Monday at 9:00 AM.
+
+        postedBy:
+          type: string
+          example: "FAC-2026-001"
+
+
+    # =========================================================================
+    # ERROR
+    # =========================================================================
+
+    ErrorResponse:
+      type: object
+      description: >
+        Problem Details response following the standard HTTP API error shape.
+        The same structure is used for validation errors, authentication errors,
+        authorization errors, missing resources, conflicts, and server errors.
+      additionalProperties: true
+      required:
+      - type
+      - title
+      - status
+      - detail
+      properties:
+
+        type:
+          type: string
+          format: uri-reference
+          description: URI reference identifying the problem type.
+          example: "https://example.com/problems/not-found"
+
+        title:
+          type: string
+          description: Short, human-readable summary of the problem.
+          example: "Not Found"
+
+        status:
+          type: integer
+          format: int32
+          description: HTTP status code generated for this occurrence of the problem.
+          example: 404
+
+        detail:
+          type: string
+          description: Human-readable explanation specific to this occurrence.
+          example: "Faculty FAC-9999 was not found."
+
+        instance:
+          type: string
+          description: URI reference identifying the specific occurrence of the problem.
+          example: "/api/v1/faculty/FAC-9999"
+
+      example:
+        type: "https://example.com/problems/not-found"
+        title: "Not Found"
+        status: 404
+        detail: "The requested faculty, subject, course, student, grade, schedule, or announcement was not found."
+        instance: "/api/v1/faculty/FAC-9999"
+
+
+  # ===========================================================================
+  # RESPONSES
+  # ===========================================================================
+
+  responses:
+
+    BadRequest:
+      description: Bad request - the request data is invalid or incomplete.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            type: "https://example.com/problems/bad-request"
+            title: "Bad Request"
+            status: 400
+            detail: "Required request fields are missing or invalid."
+            instance: "/api/v1/faculty"
+
+
+    Unauthorized:
+      description: Authentication required.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            type: "https://example.com/problems/unauthorized"
+            title: "Unauthorized"
+            status: 401
+            detail: "Authentication is required to access this resource."
+            instance: "/api/v1/faculty"
+
+
+    Forbidden:
+      description: User does not have permission.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            type: "https://example.com/problems/forbidden"
+            title: "Forbidden"
+            status: 403
+            detail: "The authenticated user does not have permission to perform this action."
+            instance: "/api/v1/faculty"
+
+
+    NotFound:
+      description: Requested resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            type: "https://example.com/problems/not-found"
+            title: "Not Found"
+            status: 404
+            detail: "The requested resource was not found."
+            instance: "/api/v1/faculty/FAC-9999"
+
+
+    InternalServerError:
+      description: Internal server error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            type: "https://example.com/problems/internal-server-error"
+            title: "Internal Server Error"
+            status: 500
+            detail: "An unexpected error occurred while processing the request."
+            instance: "/api/v1/faculty"
+
