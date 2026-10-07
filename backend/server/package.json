@@ -1,0 +1,21 @@
+{
+  "name": "idsc-faculty-api",
+  "version": "1.0.0",
+  "description": "IDSC Portal Faculty System API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "lint:openapi": "redocly lint openapi.yaml"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "swagger-ui-express": "^5.0.1",
+    "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "@redocly/cli": "^2.10.0",
+    "nodemon": "^3.1.10"
+  }
+}
