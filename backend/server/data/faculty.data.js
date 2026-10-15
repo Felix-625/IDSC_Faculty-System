@@ -35,7 +35,19 @@ const faculty = [
     employmentStatus: "ACTIVE",
     assignedSubjects: [],
     updatedAt: "2026-09-05T10:30:00Z"
-  }
+  },
+  {
+  "facultyId": "FAC-2026-003",
+  "name": "Maria Santos",
+  "email": "maria.santos@university.edu",
+  "department": "Information Technology",
+  "position": "SENIOR_FACULTY",
+  "employmentType": "FULL_TIME",
+  "specialization": "Web Development",
+  "employmentStatus": "ACTIVE",
+  "assignedSubjects": [],
+  "updatedAt": "2026-10-15T01:00:00Z"
+}
 ];
 
 module.exports = faculty;
