@@ -9,31 +9,43 @@ function getFacultyById(facultyId) {
 }
 
 function createFaculty(data) {
-  faculty.push(data);
-  return data;
+  const item = {
+    employmentStatus: "ACTIVE",
+    ...data,
+    assignedSubjects: [],
+    updatedAt: new Date().toISOString()
+  };
+  faculty.push(item);
+  return item;
 }
 
 function updateFaculty(facultyId, data) {
-  const index = faculty.findIndex(
-    item => item.facultyId === facultyId
-  );
-
-  if (index === -1) {
-    return null;
-  }
+  const index = faculty.findIndex(item => item.facultyId === facultyId);
+  if (index === -1) return null;
 
   faculty[index] = {
     ...faculty[index],
     ...data,
-    facultyId
+    facultyId,
+    assignedSubjects: faculty[index].assignedSubjects,
+    updatedAt: new Date().toISOString()
   };
-
   return faculty[index];
 }
 
-module.exports = {
-  getAllFaculty,
-  getFacultyById,
-  createFaculty,
-  updateFaculty
-};
+const SALARY_BY_TYPE = { FULL_TIME: 45000, PART_TIME: 25000, OTHER: 25000 };
+
+function getSalary(facultyId) {
+  const item = getFacultyById(facultyId);
+  if (!item) return null;
+
+  return {
+    facultyId: item.facultyId,
+    employmentType: item.employmentType,
+    salary: SALARY_BY_TYPE[item.employmentType],
+    currency: "PHP",
+    effectiveDate: "2026-09-01"
+  };
+}
+
+module.exports = { getAllFaculty, getFacultyById, createFaculty, updateFaculty, getSalary };

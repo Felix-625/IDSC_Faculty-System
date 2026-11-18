@@ -2,81 +2,63 @@ const express = require("express");
 const router = express.Router();
 
 const courseService = require("../services/course.service");
+const { sendProblem } = require("../utils/problem");
+const { validateCourse, pickCourse } = require("../utils/validators");
+const { authenticate, requireRole } = require("../middleware/auth");
+
+const notFound = (req, res) =>
+  sendProblem(req, res, 404, `Course ${req.params.courseCode} was not found.`);
+
+router.use(authenticate);
 
 router.get("/", (req, res) => {
   res.json(courseService.getAllCourses());
 });
 
-router.post("/", (req, res) => {
-  const data = req.body;
+router.post("/", requireRole("DEAN"), (req, res) => {
+  const data = pickCourse(req.body || {});
 
-  if (!data.courseCode || !data.courseName || !data.units) {
-    return res.status(400).json({
-      type: "https://example.com/problems/bad-request",
-      title: "Bad Request",
-      status: 400,
-      detail: "courseCode, courseName and units are required.",
-      instance: req.originalUrl
-    });
+  const errors = validateCourse(data);
+  if (errors.length) return sendProblem(req, res, 400, errors.join(" "), { errors });
+
+  if (courseService.getCourseByCode(data.courseCode)) {
+    return sendProblem(req, res, 409, `Course ${data.courseCode} already exists.`);
   }
 
-  res.status(201).json(
-    courseService.createCourse(data)
-  );
+  res.status(201).json(courseService.createCourse(data));
 });
 
 router.get("/:courseCode", (req, res) => {
-  const course = courseService.getCourseByCode(
-    req.params.courseCode
-  );
-
-  if (!course) {
-    return res.status(404).json({
-      type: "https://example.com/problems/not-found",
-      title: "Not Found",
-      status: 404,
-      detail: `Course ${req.params.courseCode} was not found.`,
-      instance: req.originalUrl
-    });
-  }
-
+  const course = courseService.getCourseByCode(req.params.courseCode);
+  if (!course) return notFound(req, res);
   res.json(course);
 });
 
-router.put("/:courseCode", (req, res) => {
-  const updated = courseService.updateCourse(
-    req.params.courseCode,
-    req.body
-  );
+router.put("/:courseCode", requireRole("DEAN"), (req, res) => {
+  const data = pickCourse(req.body || {});
 
-  if (!updated) {
-    return res.status(404).json({
-      type: "https://example.com/problems/not-found",
-      title: "Not Found",
-      status: 404,
-      detail: `Course ${req.params.courseCode} was not found.`,
-      instance: req.originalUrl
-    });
+  const errors = validateCourse(data);
+  if (data.courseCode && data.courseCode !== req.params.courseCode) {
+    errors.push("courseCode in the body must match the courseCode in the URL.");
   }
+  if (errors.length) return sendProblem(req, res, 400, errors.join(" "), { errors });
 
+  const updated = courseService.updateCourse(req.params.courseCode, data);
+  if (!updated) return notFound(req, res);
   res.json(updated);
 });
 
-router.delete("/:courseCode", (req, res) => {
-  const deleted = courseService.deleteCourse(
-    req.params.courseCode
-  );
+router.delete("/:courseCode", requireRole("DEAN"), (req, res) => {
+  if (!courseService.getCourseByCode(req.params.courseCode)) return notFound(req, res);
 
-  if (!deleted) {
-    return res.status(404).json({
-      type: "https://example.com/problems/not-found",
-      title: "Not Found",
-      status: 404,
-      detail: `Course ${req.params.courseCode} was not found.`,
-      instance: req.originalUrl
-    });
+  if (courseService.isCourseAssigned(req.params.courseCode)) {
+    return sendProblem(
+      req, res, 409,
+      `Course ${req.params.courseCode} is assigned to a faculty member. Mark it INACTIVE instead of deleting it.`
+    );
   }
 
+  courseService.deleteCourse(req.params.courseCode);
   res.status(204).send();
 });
 

@@ -1,55 +1,45 @@
 const courses = require("../data/course.data");
+const faculty = require("../data/faculty.data");
 
 function getAllCourses() {
   return courses;
 }
 
 function getCourseByCode(courseCode) {
-  return courses.find(
-    course => course.courseCode === courseCode
-  );
+  return courses.find(course => course.courseCode === courseCode);
 }
 
 function createCourse(data) {
-  courses.push(data);
-  return data;
+  const course = { status: "ACTIVE", ...data };
+  courses.push(course);
+  return course;
 }
 
 function updateCourse(courseCode, data) {
-  const index = courses.findIndex(
-    course => course.courseCode === courseCode
-  );
+  const index = courses.findIndex(course => course.courseCode === courseCode);
+  if (index === -1) return null;
 
-  if (index === -1) {
-    return null;
-  }
-
-  courses[index] = {
-    ...courses[index],
-    ...data,
-    courseCode
-  };
-
+  courses[index] = { ...courses[index], ...data, courseCode };
   return courses[index];
 }
 
-function deleteCourse(courseCode) {
-  const index = courses.findIndex(
-    course => course.courseCode === courseCode
+function isCourseAssigned(courseCode) {
+  return faculty.some(f =>
+    (f.assignedSubjects || []).some(
+      a => a.courseCode === courseCode && a.assignmentStatus === "ASSIGNED"
+    )
   );
+}
 
-  if (index === -1) {
-    return false;
-  }
+function deleteCourse(courseCode) {
+  const index = courses.findIndex(course => course.courseCode === courseCode);
+  if (index === -1) return false;
 
   courses.splice(index, 1);
   return true;
 }
 
 module.exports = {
-  getAllCourses,
-  getCourseByCode,
-  createCourse,
-  updateCourse,
-  deleteCourse
+  getAllCourses, getCourseByCode, createCourse,
+  updateCourse, deleteCourse, isCourseAssigned
 };

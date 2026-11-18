@@ -1,0 +1,77 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-full);
+  line-height: 1;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+
+.sm {
+  font-size: 11px;
+  padding: 3px 8px;
+}
+
+.md {
+  font-size: 12px;
+  padding: 4px 10px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+}
+
+/* Variants */
+.success {
+  background-color: var(--color-success-bg);
+  color: var(--color-success-text);
+  border-color: var(--color-success-border);
+}
+.success .dot {
+  background-color: var(--color-success-text);
+}
+
+.warning {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  border-color: var(--color-warning-border);
+}
+.warning .dot {
+  background-color: var(--color-warning-text);
+}
+
+.info {
+  background-color: var(--color-info-bg);
+  color: var(--color-info-text);
+  border-color: var(--color-info-border);
+}
+.info .dot {
+  background-color: var(--color-info-text);
+}
+
+.danger {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger-text);
+  border-color: var(--color-danger-border);
+}
+.danger .dot {
+  background-color: var(--color-danger-text);
+}
+
+.neutral {
+  background-color: var(--color-bg-muted);
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+}
+.neutral .dot {
+  background-color: var(--color-text-subtle);
+}

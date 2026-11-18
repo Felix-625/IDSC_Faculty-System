@@ -2,8 +2,8 @@ openapi: 3.0.3
 
 info:
   title: IDSC Portal - Faculty System API
-  description: >
-    PI for the IDSC Portal Faculty System.
+  description: |
+    API for the IDSC Portal Faculty System.
 
     The system allows faculty members to:
     - View their assigned subjects and sections
@@ -22,21 +22,93 @@ info:
     - Class Schedules
     - Announcements
     - Student grades
-    - Student attendance.
+    - Student attendance
   version: 1.3.0
-
   license:
     name: Academic Project License
+
 servers:
-- url: http://localhost:5000/api/v1
-  description: Local development server
+  - url: http://localhost:5000/api/v1
+    description: Local development server
 
-
-# =============================================================================
-# PATHS
-# =============================================================================
+tags:
+  - name: Authentication
+    description: Login and current user
+  - name: Health
+    description: API health check
+  - name: Faculty Management
+    description: Create, view and update faculty members (Dean)
+  - name: Faculty Salary
+    description: Faculty salary information
+  - name: Faculty Subject Assignments
+    description: Assign subjects and sections to faculty
+  - name: Course Management
+    description: Courses and faculty course assignments
+  - name: Enrolled Students
+    description: Students enrolled in a faculty subject assignment
+  - name: Student Grades
+    description: Posting and viewing student grades
+  - name: Class Schedules
+    description: Class schedule management
+  - name: Announcements
+    description: Announcements for faculty
 
 paths:
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Log in and get an access token
+      description: >
+        Exchange a facultyId and password for a JWT bearer token.
+        Send it as `Authorization: Bearer <token>` on every other request.
+        Inactive, resigned or on-leave accounts cannot log in.
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginPayload'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get the logged-in faculty member
+      operationId: getCurrentUser
+      x-roles:
+        - DEAN
+        - FACULTY
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: The authenticated faculty member
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FacultyItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   # ===========================================================================
   # HEALTH CHECK
@@ -305,7 +377,7 @@ paths:
 
 
       operationId: assignFacultySubject
-  /faculty/{facultyId}/subjects/{courseCode}:
+  /faculty/{facultyId}/subjects/{assignmentId}:
     delete:
       tags:
       - Faculty Subject Assignments
@@ -318,7 +390,7 @@ paths:
       - bearerAuth: []
       parameters:
       - $ref: '#/components/parameters/FacultyId'
-      - $ref: '#/components/parameters/CourseCode'
+      - $ref: '#/components/parameters/AssignmentId'
       responses:
         '204':
           description: Subject assignment successfully removed
@@ -543,7 +615,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/StudentItem'
-
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -661,6 +734,7 @@ paths:
       - $ref: '#/components/parameters/FacultyId'
       - $ref: '#/components/parameters/CourseCode'
       - $ref: '#/components/parameters/StudentId'
+      - $ref: '#/components/parameters/AssignmentIdQuery'
       responses:
         '200':
           description: Student grade
@@ -668,7 +742,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GradeItem'
-
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -725,6 +800,35 @@ paths:
       - DEAN
       security:
       - bearerAuth: []
+      parameters:
+      - name: section
+        in: query
+        required: false
+        description: Only schedules of this class section.
+        schema:
+          type: string
+          example: "BSIT-3A"
+      - name: facultyId
+        in: query
+        required: false
+        description: Only schedules of this faculty member.
+        schema:
+          type: string
+          example: "FAC-2026-001"
+      - name: day
+        in: query
+        required: false
+        description: Only schedules on this day.
+        schema:
+          type: string
+          enum:
+          - Monday
+          - Tuesday
+          - Wednesday
+          - Thursday
+          - Friday
+          - Saturday
+          - Sunday
       responses:
         '200':
           description: List of class schedules
@@ -768,6 +872,15 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+        '409':
+          description: The schedule conflicts with an existing schedule (same faculty, room or section)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
       operationId: createSchedule
   /schedules/{scheduleId}:
@@ -829,8 +942,34 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+        '409':
+          description: The new time conflicts with an existing schedule (same faculty, room or section)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
       operationId: updateSchedule
+    delete:
+      tags:
+      - Class Schedules
+      summary: Delete class schedule
+      x-roles:
+      - DEAN
+      description: Allows an authorized Dean to delete a class schedule.
+      operationId: deleteSchedule
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/ScheduleId'
+      responses:
+        '204':
+          description: Schedule successfully deleted
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /faculty/{facultyId}/schedule:
     get:
       tags:
@@ -1058,6 +1197,16 @@ components:
         type: string
         example: "ASG-001"
 
+    AssignmentIdQuery:
+      name: assignmentId
+      in: query
+      required: false
+      description: >
+        Needed only when the faculty member has more than one assignment
+        for the same course (for example, different sections).
+      schema:
+        type: string
+        example: "ASG-001"
 
     StudentId:
       name: studentId
@@ -1124,6 +1273,53 @@ components:
   # ===========================================================================
 
   schemas:
+
+    LoginPayload:
+      type: object
+      required:
+       - facultyId
+       - password
+      properties:
+        facultyId:
+          type: string
+          example: FAC-2026-001
+        password:
+          type: string
+          format: password
+          example: Password123!
+    LoginResponse:
+      type: object
+      required:
+        - accessToken
+        - tokenType
+        - expiresIn
+        - user
+      properties:
+        accessToken:
+          type: string
+          description: JWT to send as a Bearer token.
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn:
+          type: integer
+          description: Seconds until the token expires.
+          example: 3600
+        user:
+          type: object
+          properties:
+            facultyId:
+              type: string
+            name:
+              type: string
+            email:
+              type: string
+            position:
+              type: string
+              enum:
+                - FACULTY
+                - PROGRAM_HEAD
+                - DEAN
 
     # =========================================================================
     # FACULTY
@@ -1653,6 +1849,10 @@ components:
           format: date-time
           example: "2026-09-05T10:30:00Z"
 
+        updatedBy:
+          type: string
+          description: facultyId of the user who posted or last changed the grade.
+          example: "FAC-2026-001"
 
     GradePayload:
       type: object
@@ -1672,7 +1872,18 @@ components:
         grade:
           type: number
           format: float
-          description: Grade entered by the faculty member.
+          description: Grade entered by the faculty member (Philippine scale).
+          enum:
+            - 1.0
+            - 1.25
+            - 1.5
+            - 1.75
+            - 2.0
+            - 2.25
+            - 2.5
+            - 2.75
+            - 3.0
+            - 5.0
           example: 1.75
 
 
@@ -1725,6 +1936,19 @@ components:
           type: string
           example: "ICT-204"
 
+        assignmentId:
+          type: string
+          description: The subject assignment this schedule belongs to (set by the server).
+          example: "ASG-001"
+
+        semester:
+          type: string
+          example: "1st Semester"
+
+        academicYear:
+          type: string
+          example: "2026-2027"
+
 
     SchedulePayload:
       type: object
@@ -1753,14 +1977,24 @@ components:
         day:
           type: string
           example: "Monday"
+          enum:
+            - Monday
+            - Tuesday
+            - Wednesday
+            - Thursday
+            - Friday
+            - Saturday
+            - Sunday
 
         startTime:
           type: string
           example: "07:00"
+          pattern: '^([01]\d|2[0-3]):[0-5]\d$'
 
         endTime:
           type: string
           example: "10:00"
+          pattern: '^([01]\d|2[0-3]):[0-5]\d$'
 
         room:
           type: string
@@ -1807,6 +2041,11 @@ components:
           format: date-time
           example: "2026-09-05T08:00:00Z"
 
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2026-09-06T09:00:00Z"
+
 
     AnnouncementPayload:
       type: object
@@ -1826,9 +2065,6 @@ components:
           example: >
             There will be a faculty meeting on Monday at 9:00 AM.
 
-        postedBy:
-          type: string
-          example: "FAC-2026-001"
 
 
     # =========================================================================

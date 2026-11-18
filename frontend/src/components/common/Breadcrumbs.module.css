@@ -1,0 +1,37 @@
+.nav {
+  margin-bottom: 16px;
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  font-size: var(--font-size-sm);
+}
+
+.item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.separator {
+  color: var(--color-text-subtle);
+}
+
+.link {
+  color: var(--color-text-muted);
+  transition: color var(--transition-fast);
+}
+
+.link:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.current {
+  color: var(--color-text-heading);
+  font-weight: var(--font-weight-semibold);
+}

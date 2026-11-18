@@ -1,0 +1,190 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.countBadge {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-heading);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.search {
+  width: 280px;
+}
+
+.select {
+  width: 180px;
+}
+
+.tableCard {
+  background-color: var(--color-bg-surface);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.codeBadge {
+  font-family: monospace;
+  font-size: 13px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  background-color: var(--color-accent-tint);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-accent-border);
+}
+
+.nameCell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.subjectName {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-heading);
+}
+
+.descriptionText {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  line-height: 1.3;
+}
+
+.deptBadge {
+  font-size: 12px;
+  color: var(--color-text-body);
+}
+
+.unitsText {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-heading);
+  font-family: monospace;
+}
+
+.actionBtns {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.editBtn,
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.editBtn {
+  color: var(--color-primary);
+  background-color: var(--color-accent-tint);
+}
+
+.editBtn:hover {
+  background-color: #d1fae5;
+}
+
+.deleteBtn {
+  color: var(--color-danger-text);
+  background-color: var(--color-danger-bg);
+}
+
+.deleteBtn:hover {
+  background-color: #fecaca;
+}
+
+/* Conflict Modal Styling */
+.conflictModalBody {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.conflictIconCircle {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-danger-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.conflictIcon {
+  color: var(--color-danger-text);
+}
+
+.conflictTexts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.conflictTitle {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-heading);
+}
+
+.conflictMessage {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-body);
+  line-height: 1.5;
+}
+
+.conflictNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background-color: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
+  color: var(--color-warning-text);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+  margin-top: 6px;
+}
+
+@media (max-width: 768px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filters {
+    flex-direction: column;
+  }
+  .search,
+  .select {
+    width: 100%;
+  }
+}
