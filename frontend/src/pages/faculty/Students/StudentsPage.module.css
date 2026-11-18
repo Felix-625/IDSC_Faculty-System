@@ -1,0 +1,139 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sectionTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-heading);
+}
+
+.countBadge {
+  background-color: var(--color-accent-tint);
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+}
+
+.filtersRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.search {
+  width: 260px;
+}
+
+.select {
+  width: 140px;
+}
+
+.selectSubject {
+  width: 200px;
+}
+
+.tableCard {
+  background-color: var(--color-bg-surface);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.studentCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.studentName {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-heading);
+}
+
+.studentSub {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.idCode {
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-body);
+  background-color: var(--color-bg-subtle);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+}
+
+.subjectCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.subjectCode {
+  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+.subjectName {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-body);
+}
+
+.sectionBadge {
+  background-color: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.programBadge {
+  background-color: var(--color-accent-tint);
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+@media (max-width: 900px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filtersRow {
+    flex-direction: column;
+  }
+  .search,
+  .select,
+  .selectSubject {
+    width: 100%;
+  }
+}

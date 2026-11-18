@@ -1,0 +1,88 @@
+:root {
+  /* Colors */
+  --color-primary: #006622;
+  --color-primary-dark: #004d1a;
+  --color-primary-hover: #00541c;
+  --color-primary-light: #e6f4eb;
+  
+  --color-accent: #16a34a;
+  --color-accent-hover: #15803d;
+  --color-accent-tint: #e8f5ec;
+  --color-accent-border: #bbf7d0;
+
+  --color-bg-page: #f1f1f1;
+  --color-bg-surface: #ffffff;
+  --color-bg-subtle: #f9fafb;
+  --color-bg-muted: #f3f4f6;
+
+  --color-border: #e5e7eb;
+  --color-border-dark: #d1d5db;
+  --color-border-subtle: #f3f4f6;
+
+  --color-text-heading: #16261c;
+  --color-text-body: #1f2937;
+  --color-text-muted: #6b7280;
+  --color-text-subtle: #9ca3af;
+  --color-text-white: #ffffff;
+
+  /* Status Colors */
+  --color-success-text: #16a34a;
+  --color-success-bg: #e8f5ec;
+  --color-success-border: #bbf7d0;
+
+  --color-warning-text: #b45309;
+  --color-warning-bg: #fff1e0;
+  --color-warning-border: #fde68a;
+
+  --color-info-text: #1d6fd8;
+  --color-info-bg: #e6f0ff;
+  --color-info-border: #bfdbfe;
+
+  --color-danger-text: #e5383b;
+  --color-danger-bg: #fbd5d5;
+  --color-danger-border: #f5b5b5;
+
+  /* Gradients */
+  --gradient-announcement: linear-gradient(135deg, #0b4da2 0%, #0a6ae0 100%);
+  --gradient-hero: linear-gradient(135deg, #006622 0%, #004d1a 100%);
+
+  /* Typography */
+  --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.8125rem;  /* 13px */
+  --font-size-base: 0.875rem; /* 14px */
+  --font-size-md: 1rem;       /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.375rem;   /* 22px */
+  --font-size-2xl: 1.625rem;  /* 26px */
+  --font-size-hero: 2.25rem;  /* 36px - 40px */
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-card: 14px;
+  --radius-banner: 16px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+
+  /* Layout */
+  --sidebar-width: 240px;
+  --topbar-height: 72px;
+}

@@ -1,0 +1,108 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardTitle {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-heading);
+}
+
+.cardCaption {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.countBadge {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-heading);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+}
+
+.dayCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dayName {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-heading);
+}
+
+.todayIndicator {
+  background-color: var(--color-accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+}
+
+.timeCell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-body);
+}
+
+.timeIcon {
+  color: var(--color-text-muted);
+}
+
+.subjectCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.subjectCode {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+.subjectDivider {
+  color: var(--color-text-subtle);
+}
+
+.subjectName {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-heading);
+}
+
+.sectionBadge {
+  background-color: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.roomCell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-body);
+}
+
+.roomIcon {
+  color: var(--color-text-muted);
+}
