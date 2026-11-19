@@ -1,4 +1,5 @@
 const faculty = require("../data/faculty.data");
+const financeAdapter = require("../adapters/finance.adapter");
 
 function getAllFaculty(department) {
   if (department && department !== "ALL" && department !== "Academic Affairs") {
@@ -38,17 +39,11 @@ function updateFaculty(facultyId, data) {
 
 const SALARY_BY_TYPE = { FULL_TIME: 45000, PART_TIME: 25000, OTHER: 25000 };
 
-function getSalary(facultyId) {
+async function getSalary(facultyId) {
   const item = getFacultyById(facultyId);
   if (!item) return null;
 
-  return {
-    facultyId: item.facultyId,
-    employmentType: item.employmentType,
-    salary: SALARY_BY_TYPE[item.employmentType],
-    currency: "PHP",
-    effectiveDate: "2026-09-01"
-  };
+  return await financeAdapter.getFacultySalary(facultyId, item.employmentType);
 }
 
 module.exports = { getAllFaculty, getFacultyById, createFaculty, updateFaculty, getSalary };

@@ -6,7 +6,7 @@ const registrar = require("../adapters/registrar.adapter");
 const { authenticate, requireSelfOrDean } = require("../middleware/auth");
 const { sendProblem } = require("../utils/problem");
 
-router.get("/:facultyId/courses/:courseCode/students", authenticate, requireSelfOrDean, (req, res) => {
+router.get("/:facultyId/courses/:courseCode/students", authenticate, requireSelfOrDean, async (req, res) => {
   const { facultyId, courseCode } = req.params;
   const { section, semester, academicYear } = req.query;
 
@@ -30,7 +30,8 @@ router.get("/:facultyId/courses/:courseCode/students", authenticate, requireSelf
       `Faculty ${facultyId} is not assigned to ${courseCode} (${section}, ${semester}, ${academicYear}).`);
   }
 
-  res.json(registrar.getEnrolledStudents({ courseCode, section, semester, academicYear }));
+  const enrolled = await registrar.getEnrolledStudents({ courseCode, section, semester, academicYear });
+  res.json(enrolled);
 });
 
 module.exports = router;

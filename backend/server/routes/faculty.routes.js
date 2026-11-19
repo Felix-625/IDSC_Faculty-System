@@ -73,8 +73,8 @@ router.put("/:facultyId", requireRole("DEAN"), (req, res) => {
   res.json(updated);
 });
 
-router.get("/:facultyId/salary", requireSelfOrDean, (req, res) => {
-  const salary = facultyService.getSalary(req.params.facultyId);
+router.get("/:facultyId/salary", requireSelfOrDean, async (req, res) => {
+  const salary = await facultyService.getSalary(req.params.facultyId);
   if (!salary) return notFound(req, res);
   res.json(salary);
 });

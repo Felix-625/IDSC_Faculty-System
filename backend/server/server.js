@@ -1,8 +1,10 @@
+require("dotenv").config();
 const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
+const connectDB = require("./config/db");
 const authRoutes = require("./routes/auth.routes");
 
 const facultyRoutes = require("./routes/faculty.routes");
@@ -39,6 +41,7 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 if (require.main === module) {
+  connectDB();
   app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
     console.log(`Swagger UI: http://localhost:${PORT}/docs`);

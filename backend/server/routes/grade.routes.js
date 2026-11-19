@@ -72,7 +72,7 @@ function resolveForWrite(req, res) {
     return null;
   }
 
-  const student = registrar.getEnrolledStudent(studentId, assignment);
+  const student = registrar.getEnrolledStudentSync(studentId, assignment);
   if (!student) {
     sendProblem(req, res, 404, `Student ${studentId} is not enrolled in this subject offering.`);
     return null;
