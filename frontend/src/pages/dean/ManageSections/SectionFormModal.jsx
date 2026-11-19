@@ -14,12 +14,20 @@ const YEAR_LEVEL_OPTIONS = [
   { value: '4', label: '4th Year' },
 ];
 
-export function SectionFormModal({ isOpen, onClose, initialData, onSubmit, isLoading }) {
+export function SectionFormModal({
+  isOpen,
+  onClose,
+  initialData,
+  onSubmit,
+  isLoading,
+  deanDepartment,
+  isAvp = false,
+}) {
   const isEdit = Boolean(initialData);
 
   const { data: programs = [] } = useQuery({
-    queryKey: ['mockPrograms'],
-    queryFn: () => mockPrograms.list(),
+    queryKey: ['mockPrograms', deanDepartment, isAvp],
+    queryFn: () => mockPrograms.list(isAvp ? undefined : deanDepartment),
   });
 
   const programOptions = programs.map((p) => ({

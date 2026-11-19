@@ -1318,8 +1318,8 @@ components:
               type: string
               enum:
                 - FACULTY
-                - PROGRAM_HEAD
                 - DEAN
+                - AVP
 
     # =========================================================================
     # FACULTY
@@ -1358,8 +1358,8 @@ components:
           type: string
           enum:
           - FACULTY
-          - PROGRAM_HEAD
           - DEAN
+          - AVP
           example: "DEAN"
 
         employmentType:
@@ -1426,8 +1426,8 @@ components:
           type: string
           enum:
           - FACULTY
-          - PROGRAM_HEAD
           - DEAN
+          - AVP
           example: "FACULTY"
 
         employmentType:
@@ -1832,10 +1832,51 @@ components:
           example: "2026-2027"
 
         grade:
-          type: number
-          format: float
-          description: Final grade for the subject.
+          oneOf:
+            - type: number
+              format: float
+            - type: string
+              enum: [INC, DRP, W]
+          nullable: true
+          description: Final grade or mark for the subject.
           example: 1.75
+
+        components:
+          type: object
+          description: Period grading breakdown
+          properties:
+            prelim:
+              oneOf:
+                - type: number
+                  format: float
+                - type: string
+                  enum: [INC, DRP, W]
+            midterm:
+              oneOf:
+                - type: number
+                  format: float
+                - type: string
+                  enum: [INC, DRP, W]
+            preFinal:
+              oneOf:
+                - type: number
+                  format: float
+                - type: string
+                  enum: [INC, DRP, W]
+            final:
+              oneOf:
+                - type: number
+                  format: float
+                - type: string
+                  enum: [INC, DRP, W]
+
+        remarks:
+          type: string
+          example: "PASSED"
+
+        reason:
+          type: string
+          example: "Submitted missing project"
 
         status:
           type: string
@@ -1858,7 +1899,6 @@ components:
       type: object
       required:
       - assignmentId
-      - grade
 
       properties:
 
@@ -1870,21 +1910,51 @@ components:
           example: "ASG-001"
 
         grade:
-          type: number
-          format: float
-          description: Grade entered by the faculty member (Philippine scale).
-          enum:
-            - 1.0
-            - 1.25
-            - 1.5
-            - 1.75
-            - 2.0
-            - 2.25
-            - 2.5
-            - 2.75
-            - 3.0
-            - 5.0
+          oneOf:
+            - type: number
+              format: float
+            - type: string
+              enum: [INC, DRP, W]
+          nullable: true
+          description: Grade entered by the faculty member (Philippine scale or mark).
           example: 1.75
+
+        components:
+          type: object
+          description: Period grading breakdown
+          properties:
+            prelim:
+              oneOf:
+                - type: number
+                  format: float
+                - type: string
+                  enum: [INC, DRP, W]
+            midterm:
+              oneOf:
+                - type: number
+                  format: float
+                - type: string
+                  enum: [INC, DRP, W]
+            preFinal:
+              oneOf:
+                - type: number
+                  format: float
+                - type: string
+                  enum: [INC, DRP, W]
+            final:
+              oneOf:
+                - type: number
+                  format: float
+                - type: string
+                  enum: [INC, DRP, W]
+
+        remarks:
+          type: string
+          example: "PASSED"
+
+        reason:
+          type: string
+          example: "Correction of encoding error"
 
 
     # =========================================================================

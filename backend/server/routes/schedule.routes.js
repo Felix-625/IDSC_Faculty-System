@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const scheduleService = require("../services/schedule.service");
+const facultyService = require("../services/faculty.service");
 const { authenticate, requireRole, requireSelfOrDean } = require("../middleware/auth");
 const { sendProblem } = require("../utils/problem");
 const { validateSchedule, pickSchedule, DAYS } = require("../utils/validators");
@@ -35,11 +36,19 @@ router.get("/schedules", authenticate, requireRole("DEAN"), (req, res) => {
     return sendProblem(req, res, 400, `day must be one of: ${DAYS.join(", ")}.`);
   }
 
-  res.json(scheduleService.getSchedules({
+  let schedules = scheduleService.getSchedules({
     section: typeof section === "string" ? section : undefined,
     facultyId: typeof facultyId === "string" ? facultyId : undefined,
     day
-  }));
+  });
+
+  // If user is DEAN, scope schedules to faculties of their department
+  if (req.user.role !== "AVP") {
+    const deptFaculties = new Set(facultyService.getAllFaculty(req.user.department).map(f => f.facultyId));
+    schedules = schedules.filter(s => deptFaculties.has(s.facultyId));
+  }
+
+  res.json(schedules);
 });
 
 router.post("/schedules", authenticate, requireRole("DEAN"), (req, res) => {

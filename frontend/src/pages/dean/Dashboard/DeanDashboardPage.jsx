@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../../../auth/useAuth';
 import { getFacultyList, createFaculty } from '../../../api/faculty';
 import { getCourses, createCourse } from '../../../api/courses';
 import { getAnnouncements, createAnnouncement } from '../../../api/announcements';
@@ -25,24 +26,25 @@ import {
 } from 'lucide-react';
 
 export function DeanDashboardPage() {
+  const { user, isAvp } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { success: toastSuccess, error: toastError } = useToast();
 
-  // Queries
+  // Queries (scoped to Dean department or all for AVP)
   const { data: facultyList = [], isLoading: isLoadingFaculty } = useQuery({
-    queryKey: ['faculty'],
+    queryKey: ['faculty', user?.department, isAvp],
     queryFn: getFacultyList,
   });
 
   const { data: courses = [], isLoading: isLoadingCourses } = useQuery({
-    queryKey: ['courses'],
+    queryKey: ['courses', user?.department, isAvp],
     queryFn: getCourses,
   });
 
   const { data: sections = [], isLoading: isLoadingSections } = useQuery({
-    queryKey: ['sections'],
-    queryFn: () => mockSections.list(),
+    queryKey: ['sections', user?.department, isAvp],
+    queryFn: () => mockSections.list(isAvp ? undefined : user?.department),
   });
 
   const { data: announcements = [], isLoading: isLoadingAnnouncements } = useQuery({
@@ -96,9 +98,11 @@ export function DeanDashboardPage() {
       {/* Hero Welcome Banner */}
       <section className={styles.heroBanner}>
         <div className={styles.heroContent}>
-          <h1 className={styles.heroTitle}>Welcome to IDSC Faculty Portal</h1>
+          <h1 className={styles.heroTitle}>Welcome, {user?.name || 'Dean'}</h1>
           <p className={styles.heroSubtitle}>
-            Dean Administration & Academic Department Management
+            {isAvp
+              ? 'Academic Affairs Executive Portal · Institutional Oversight'
+              : `College of ${user?.department || 'Department'} · Dean Administration`}
           </p>
         </div>
       </section>
@@ -237,6 +241,8 @@ export function DeanDashboardPage() {
       <FacultyFormModal
         isOpen={isAddFacultyOpen}
         onClose={() => setIsAddFacultyOpen(false)}
+        deanDepartment={user?.department}
+        isAvp={isAvp}
         onSubmit={async (data) => {
           await createFacultyMutation.mutateAsync(data);
         }}
@@ -245,6 +251,8 @@ export function DeanDashboardPage() {
       <SubjectFormModal
         isOpen={isAddSubjectOpen}
         onClose={() => setIsAddSubjectOpen(false)}
+        deanDepartment={user?.department}
+        isAvp={isAvp}
         onSubmit={async (data) => {
           await createCourseMutation.mutateAsync(data);
         }}

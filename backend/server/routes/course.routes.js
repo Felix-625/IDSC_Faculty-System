@@ -12,11 +12,17 @@ const notFound = (req, res) =>
 router.use(authenticate);
 
 router.get("/", (req, res) => {
-  res.json(courseService.getAllCourses());
+  const dept = req.user.role === "AVP" ? req.query.department : req.user.department;
+  res.json(courseService.getAllCourses(dept));
 });
 
 router.post("/", requireRole("DEAN"), (req, res) => {
   const data = pickCourse(req.body || {});
+
+  // Deans can only register courses for their own department; AVP can register for any.
+  if (req.user.role !== "AVP") {
+    data.department = req.user.department;
+  }
 
   const errors = validateCourse(data);
   if (errors.length) return sendProblem(req, res, 400, errors.join(" "), { errors });
@@ -31,11 +37,28 @@ router.post("/", requireRole("DEAN"), (req, res) => {
 router.get("/:courseCode", (req, res) => {
   const course = courseService.getCourseByCode(req.params.courseCode);
   if (!course) return notFound(req, res);
+
+  // Deans cannot view courses from other departments
+  if (req.user.role === "DEAN" && course.department !== req.user.department) {
+    return sendProblem(req, res, 403, "You can only access courses belonging to your department.");
+  }
+
   res.json(course);
 });
 
 router.put("/:courseCode", requireRole("DEAN"), (req, res) => {
+  const existing = courseService.getCourseByCode(req.params.courseCode);
+  if (!existing) return notFound(req, res);
+
+  // Deans can only update courses in their own department
+  if (req.user.role !== "AVP" && existing.department !== req.user.department) {
+    return sendProblem(req, res, 403, "You can only update courses belonging to your department.");
+  }
+
   const data = pickCourse(req.body || {});
+  if (req.user.role !== "AVP") {
+    data.department = req.user.department;
+  }
 
   const errors = validateCourse(data);
   if (data.courseCode && data.courseCode !== req.params.courseCode) {
@@ -44,12 +67,17 @@ router.put("/:courseCode", requireRole("DEAN"), (req, res) => {
   if (errors.length) return sendProblem(req, res, 400, errors.join(" "), { errors });
 
   const updated = courseService.updateCourse(req.params.courseCode, data);
-  if (!updated) return notFound(req, res);
   res.json(updated);
 });
 
 router.delete("/:courseCode", requireRole("DEAN"), (req, res) => {
-  if (!courseService.getCourseByCode(req.params.courseCode)) return notFound(req, res);
+  const existing = courseService.getCourseByCode(req.params.courseCode);
+  if (!existing) return notFound(req, res);
+
+  // Deans can only delete courses in their own department
+  if (req.user.role !== "AVP" && existing.department !== req.user.department) {
+    return sendProblem(req, res, 403, "You can only delete courses belonging to your department.");
+  }
 
   if (courseService.isCourseAssigned(req.params.courseCode)) {
     return sendProblem(

@@ -71,12 +71,14 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const isDean = useMemo(() => user?.position === 'DEAN', [user]);
+  const isAvp = useMemo(() => user?.position === 'AVP', [user]);
+  const isDean = useMemo(() => user?.position === 'DEAN' || user?.position === 'AVP', [user]);
 
   const value = useMemo(
     () => ({
       token,
       user,
+      isAvp,
       isDean,
       isAuthenticated: Boolean(token && user),
       sessionExpiry,
@@ -86,7 +88,7 @@ export function AuthProvider({ children }) {
       logout,
       setUser,
     }),
-    [token, user, isDean, sessionExpiry, logoutMessage, loginUser, logout]
+    [token, user, isAvp, isDean, sessionExpiry, logoutMessage, loginUser, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

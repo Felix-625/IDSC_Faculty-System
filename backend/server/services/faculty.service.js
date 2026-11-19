@@ -1,6 +1,9 @@
 const faculty = require("../data/faculty.data");
 
-function getAllFaculty() {
+function getAllFaculty(department) {
+  if (department && department !== "ALL" && department !== "Academic Affairs") {
+    return faculty.filter(item => item.department === department);
+  }
   return faculty;
 }
 

@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { RequireAuth } from './auth/RequireAuth';
 import { RequireDean } from './auth/RequireDean';
+import { RequireAvp } from './auth/RequireAvp';
 import { AppShell } from './layout/AppShell';
 
 import { LoginPage } from './pages/Login/LoginPage';
@@ -22,6 +23,7 @@ import { ManageSectionsPage } from './pages/dean/ManageSections/ManageSectionsPa
 import { ManageSubjectsPage } from './pages/dean/ManageSubjects/ManageSubjectsPage';
 import { ManageSchedulePage } from './pages/dean/ManageSchedule/ManageSchedulePage';
 import { ManageAnnouncementsPage } from './pages/dean/ManageAnnouncements/ManageAnnouncementsPage';
+import { ManageDeansPage } from './pages/avp/Deans/ManageDeansPage';
 
 export const routes = [
   {
@@ -71,6 +73,15 @@ export const routes = [
       {
         path: 'announcements/:announcementId',
         element: <AnnouncementDetailPage />,
+      },
+      // AVP Protected Routes
+      {
+        path: 'avp/deans',
+        element: (
+          <RequireAvp>
+            <ManageDeansPage />
+          </RequireAvp>
+        ),
       },
       // Dean Protected Routes
       {

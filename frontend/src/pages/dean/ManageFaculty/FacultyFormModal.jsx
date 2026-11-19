@@ -11,13 +11,17 @@ export function FacultyFormModal({
   onClose,
   onSubmit, // async (data) => void
   initialData = null, // if present -> edit mode
+  deanDepartment,
+  isAvp = false,
 }) {
   const isEdit = Boolean(initialData);
 
   const [facultyId, setFacultyId] = useState(() => initialData?.facultyId || '');
   const [name, setName] = useState(() => initialData?.name || '');
   const [email, setEmail] = useState(() => initialData?.email || '');
-  const [department, setDepartment] = useState(() => initialData?.department || 'Information Technology');
+  const [department, setDepartment] = useState(
+    () => initialData?.department || deanDepartment || 'Information Technology'
+  );
   const [position, setPosition] = useState(() => initialData?.position || 'FACULTY');
   const [employmentType, setEmploymentType] = useState(() => initialData?.employmentType || 'FULL_TIME');
   const [specialization, setSpecialization] = useState(() => initialData?.specialization || '');
@@ -66,9 +70,9 @@ export function FacultyFormModal({
   };
 
   const positionOptions = [
-    { value: 'FACULTY', label: 'FACULTY' },
-    { value: 'PROGRAM_HEAD', label: 'PROGRAM HEAD' },
-    { value: 'DEAN', label: 'DEAN' },
+    { value: 'FACULTY', label: 'FACULTY (Instructor)' },
+    { value: 'DEAN', label: 'DEAN (College Head)' },
+    { value: 'AVP', label: 'AVP (Academic Vice President)' },
   ];
 
   const employmentTypeOptions = [
@@ -85,10 +89,13 @@ export function FacultyFormModal({
   ];
 
   const departmentOptions = [
-    { value: 'Information Technology', label: 'Information Technology' },
-    { value: 'Computer Science', label: 'Computer Science' },
-    { value: 'Information Studies', label: 'Information Studies' },
-    { value: 'General Education', label: 'General Education' },
+    { value: 'Information Technology', label: 'College of Information Technology' },
+    { value: 'Business Administration', label: 'College of Business Administration' },
+    { value: 'Hospitality and Tourism Management', label: 'College of Hospitality & Tourism Management' },
+    { value: 'Teacher Education', label: 'College of Teacher Education' },
+    { value: 'Criminology', label: 'College of Criminology' },
+    { value: 'General Education', label: 'Department of General Education (Minors)' },
+    { value: 'Academic Affairs', label: 'Office of Academic Affairs' },
   ];
 
   return (
@@ -159,13 +166,18 @@ export function FacultyFormModal({
             />
           </FormField>
 
-          <FormField label="Department" id="department" required>
+          <FormField
+            label="Department"
+            id="department"
+            required
+            hint={!isAvp && deanDepartment ? `Scoped to your college department (${deanDepartment})` : undefined}
+          >
             <Select
               id="department"
               value={department}
               onChange={setDepartment}
               options={departmentOptions}
-              disabled={isLoading}
+              disabled={(!isAvp && Boolean(deanDepartment)) || isLoading}
             />
           </FormField>
         </div>

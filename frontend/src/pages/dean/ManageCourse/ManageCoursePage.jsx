@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../../../auth/useAuth';
 import { mockPrograms } from '../../../api/mock/programs';
 import { useToast } from '../../../components/common/useToast';
 import { PageHeader } from '../../../components/common/PageHeader';
@@ -22,6 +23,7 @@ const STATUS_FILTER_OPTIONS = [
 ];
 
 export function ManageCoursePage() {
+  const { user, isAvp } = useAuth();
   const queryClient = useQueryClient();
   const { success: toastSuccess, error: toastError } = useToast();
 
@@ -35,10 +37,10 @@ export function ManageCoursePage() {
   const [editingProgram, setEditingProgram] = useState(null);
   const [deletingProgram, setDeletingProgram] = useState(null);
 
-  // 1. Fetch programs from mock
+  // 1. Fetch programs from mock (scoped to Dean department or all for AVP)
   const { data: programs = [], isLoading } = useQuery({
-    queryKey: ['mockPrograms'],
-    queryFn: () => mockPrograms.list(),
+    queryKey: ['mockPrograms', user?.department, isAvp],
+    queryFn: () => mockPrograms.list(isAvp ? undefined : user?.department),
   });
 
   // 2. Mutations
@@ -190,8 +192,12 @@ export function ManageCoursePage() {
   return (
     <div className={styles.container}>
       <PageHeader
-        title="Academic Programs Management"
-        subtitle="Manage college degree offerings, academic tracks, and department alignments"
+        title={isAvp ? 'Academic Programs Catalog (All Colleges)' : `Manage Programs — ${user?.department || 'Department'}`}
+        subtitle={
+          isAvp
+            ? 'Manage college degree offerings, academic tracks, and department alignments across all colleges'
+            : `Manage college degree offerings and curriculum tracks for the ${user?.department} college`
+        }
         icon={GraduationCap}
         actions={
           <div className={styles.headerActions}>
@@ -280,6 +286,8 @@ export function ManageCoursePage() {
             setEditingProgram(null);
           }}
           initialData={editingProgram}
+          deanDepartment={user?.department}
+          isAvp={isAvp}
           onSubmit={handleFormSubmit}
           isLoading={createMutation.isPending || updateMutation.isPending}
         />

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../../../auth/useAuth';
 import { getFacultyList, createFaculty, updateFaculty } from '../../../api/faculty';
 import { useToast } from '../../../components/common/useToast';
 import { PageHeader } from '../../../components/common/PageHeader';
@@ -16,6 +17,7 @@ import styles from './ManageFacultyPage.module.css';
 import { Users, UserPlus, Edit2, ArrowRight } from 'lucide-react';
 
 export function ManageFacultyPage() {
+  const { user, isAvp } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { success: toastSuccess, error: toastError } = useToast();
@@ -26,7 +28,7 @@ export function ManageFacultyPage() {
     isError,
     refetch,
   } = useQuery({
-    queryKey: ['faculty'],
+    queryKey: ['faculty', user?.department, isAvp],
     queryFn: getFacultyList,
   });
 
@@ -172,8 +174,12 @@ export function ManageFacultyPage() {
   return (
     <div className={styles.container}>
       <PageHeader
-        title="Manage Faculty"
-        subtitle="Instructor roster, academic departments, employment status, and subject assignments."
+        title={isAvp ? 'Faculty Directory (All Departments)' : `Manage Faculty — ${user?.department || 'Department'}`}
+        subtitle={
+          isAvp
+            ? 'Executive instructor roster and department assignments across all 5 colleges.'
+            : `Instructor roster and academic profiles for the ${user?.department || 'college'} department.`
+        }
         icon={Users}
         actions={
           <Button variant="primary" icon={UserPlus} onClick={handleOpenAdd}>
@@ -239,6 +245,8 @@ export function ManageFacultyPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         initialData={editingFaculty}
+        deanDepartment={user?.department}
+        isAvp={isAvp}
         onSubmit={async (data) => {
           if (editingFaculty) {
             await updateMutation.mutateAsync({

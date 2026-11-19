@@ -13,15 +13,44 @@ const GRADE_PATH = "/:facultyId/courses/:courseCode/students/:studentId/grade";
 // Returns { assignment, student } or sends the error response and returns null.
 function resolveForWrite(req, res) {
   const { facultyId, courseCode, studentId } = req.params;
-  const { assignmentId, grade } = req.body || {};
+  const { assignmentId, grade, components } = req.body || {};
 
   const errors = [];
   if (typeof assignmentId !== "string" || assignmentId.trim() === "") {
     errors.push("assignmentId is required and must be a non-empty string.");
   }
-  if (!gradeService.isValidGrade(grade)) {
-    errors.push(`grade is required and must be one of: ${gradeService.ALLOWED_GRADES.join(", ")}.`);
+
+  const hasGrade = grade !== undefined && grade !== null && grade !== "";
+  if (hasGrade && !gradeService.isValidGrade(grade)) {
+    errors.push(`grade must be one of: ${gradeService.ALLOWED_GRADES.join(", ")}.`);
   }
+
+  const comps = components || {};
+  const hasComp = (val) => val !== undefined && val !== null && val !== "";
+  if (hasComp(comps.prelim) && !gradeService.isValidGrade(comps.prelim)) {
+    errors.push(`prelim component must be one of: ${gradeService.ALLOWED_GRADES.join(", ")}.`);
+  }
+  if (hasComp(comps.midterm) && !gradeService.isValidGrade(comps.midterm)) {
+    errors.push(`midterm component must be one of: ${gradeService.ALLOWED_GRADES.join(", ")}.`);
+  }
+  if (hasComp(comps.preFinal) && !gradeService.isValidGrade(comps.preFinal)) {
+    errors.push(`preFinal component must be one of: ${gradeService.ALLOWED_GRADES.join(", ")}.`);
+  }
+  if (hasComp(comps.final) && !gradeService.isValidGrade(comps.final)) {
+    errors.push(`final component must be one of: ${gradeService.ALLOWED_GRADES.join(", ")}.`);
+  }
+
+  const anyGradePresent =
+    hasGrade ||
+    hasComp(comps.prelim) ||
+    hasComp(comps.midterm) ||
+    hasComp(comps.preFinal) ||
+    hasComp(comps.final);
+
+  if (!anyGradePresent) {
+    errors.push(`At least one grade or period component (prelim, midterm, preFinal, final) is required.`);
+  }
+
   if (errors.length) {
     sendProblem(req, res, 400, errors.join(" "), { errors });
     return null;
@@ -60,7 +89,13 @@ router.post(GRADE_PATH, authenticate, requireSelfOrDean, (req, res) => {
     return sendProblem(req, res, 409, "A grade already exists for this student and subject assignment. Use PUT to update it.");
   }
 
-  const item = gradeService.createGrade(ctx.assignment, req.params.studentId, req.body.grade, req.user.facultyId);
+  const item = gradeService.createGrade(
+    ctx.assignment,
+    req.params.studentId,
+    req.body.grade,
+    req.user.facultyId,
+    { components: req.body.components, remarks: req.body.remarks, reason: req.body.reason }
+  );
   res.status(201).json(item);
 });
 
@@ -73,7 +108,13 @@ router.put(GRADE_PATH, authenticate, requireSelfOrDean, (req, res) => {
     return sendProblem(req, res, 404, "No grade exists yet for this student and subject assignment. Use POST to add it.");
   }
 
-  res.json(gradeService.updateGrade(existing, req.body.grade, req.user.facultyId));
+  res.json(
+    gradeService.updateGrade(existing, req.body.grade, req.user.facultyId, {
+      components: req.body.components,
+      remarks: req.body.remarks,
+      reason: req.body.reason
+    })
+  );
 });
 
 // assignmentId (query) is optional when the faculty has only one assignment for that course.

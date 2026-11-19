@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../../../auth/useAuth';
 import {
   getCourses,
   createCourse,
@@ -23,6 +24,7 @@ import styles from './ManageSubjectsPage.module.css';
 import { BookOpen, Plus, Edit2, Trash2, AlertTriangle, ShieldAlert } from 'lucide-react';
 
 export function ManageSubjectsPage() {
+  const { user, isAvp } = useAuth();
   const queryClient = useQueryClient();
   const { success: toastSuccess, error: toastError } = useToast();
 
@@ -32,7 +34,7 @@ export function ManageSubjectsPage() {
     isError,
     refetch,
   } = useQuery({
-    queryKey: ['courses'],
+    queryKey: ['courses', user?.department, isAvp],
     queryFn: getCourses,
   });
 
@@ -217,8 +219,12 @@ export function ManageSubjectsPage() {
   return (
     <div className={styles.container}>
       <PageHeader
-        title="Manage Subjects"
-        subtitle="Configure university curriculum subjects, credit units, and active courses."
+        title={isAvp ? 'Curriculum Catalog (All Colleges)' : `Curriculum Catalog — ${user?.department || 'Department'}`}
+        subtitle={
+          isAvp
+            ? 'Complete master directory of academic subject offerings across all college departments.'
+            : `Course offerings and curriculum subjects for the ${user?.department} college.`
+        }
         icon={BookOpen}
         actions={
           <Button variant="primary" icon={Plus} onClick={handleOpenAdd}>
@@ -284,6 +290,8 @@ export function ManageSubjectsPage() {
         isOpen={isFormModalOpen}
         onClose={() => setIsFormModalOpen(false)}
         initialData={editingCourse}
+        deanDepartment={user?.department}
+        isAvp={isAvp}
         onSubmit={async (data) => {
           if (editingCourse) {
             await updateMutation.mutateAsync({

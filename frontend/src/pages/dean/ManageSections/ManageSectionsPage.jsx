@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../../../auth/useAuth';
 import { mockSections } from '../../../api/mock/sections';
 import { mockPrograms } from '../../../api/mock/programs';
 import { useToast } from '../../../components/common/useToast';
@@ -12,6 +13,7 @@ import { MetricCard } from '../../../components/common/MetricCard';
 import { ConfirmDialog } from '../../../components/common/ConfirmDialog';
 import { Pagination } from '../../../components/common/Pagination';
 import { SectionFormModal } from './SectionFormModal';
+import { SectionRosterModal } from './SectionRosterModal';
 import styles from './ManageSectionsPage.module.css';
 import { Layers, Plus, Pencil, Trash2, Users, GraduationCap } from 'lucide-react';
 
@@ -24,6 +26,7 @@ const YEAR_LEVEL_FILTER_OPTIONS = [
 ];
 
 export function ManageSectionsPage() {
+  const { user, isAvp } = useAuth();
   const queryClient = useQueryClient();
   const { success: toastSuccess, error: toastError } = useToast();
 
@@ -37,17 +40,18 @@ export function ManageSectionsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
   const [deletingSection, setDeletingSection] = useState(null);
+  const [rosterSection, setRosterSection] = useState(null);
 
-  // 1. Fetch sections from mock
+  // 1. Fetch sections from mock (scoped to Dean department or all for AVP)
   const { data: sections = [], isLoading } = useQuery({
-    queryKey: ['mockSections'],
-    queryFn: () => mockSections.list(),
+    queryKey: ['mockSections', user?.department, isAvp],
+    queryFn: () => mockSections.list(isAvp ? undefined : user?.department),
   });
 
   // 2. Fetch programs for filter dropdown
   const { data: programs = [] } = useQuery({
-    queryKey: ['mockPrograms'],
-    queryFn: () => mockPrograms.list(),
+    queryKey: ['mockPrograms', user?.department, isAvp],
+    queryFn: () => mockPrograms.list(isAvp ? undefined : user?.department),
   });
 
   const programFilterOptions = useMemo(() => {
@@ -194,6 +198,15 @@ export function ManageSectionsPage() {
         <div className={styles.actionsCell}>
           <button
             type="button"
+            className={`${styles.actionBtn} ${styles.rosterBtn}`}
+            onClick={() => setRosterSection(s)}
+            title="Manage Student Roster"
+            aria-label={`Manage students in ${s.sectionName}`}
+          >
+            <Users size={15} />
+          </button>
+          <button
+            type="button"
             className={styles.actionBtn}
             onClick={() => handleOpenEdit(s)}
             title="Edit Section"
@@ -218,8 +231,12 @@ export function ManageSectionsPage() {
   return (
     <div className={styles.container}>
       <PageHeader
-        title="Manage Class Sections"
-        subtitle="Organize student sections, monitor student caps, and align academic programs"
+        title={isAvp ? 'Class Sections (All Colleges)' : `Manage Sections — ${user?.department || 'Department'}`}
+        subtitle={
+          isAvp
+            ? 'Organize student sections, monitor student caps, and align academic programs across all colleges'
+            : `Organize student sections and academic cohorts for the ${user?.department} college`
+        }
         icon={Layers}
         actions={
           <div className={styles.headerActions}>
@@ -321,8 +338,22 @@ export function ManageSectionsPage() {
             setEditingSection(null);
           }}
           initialData={editingSection}
+          deanDepartment={user?.department}
+          isAvp={isAvp}
           onSubmit={handleFormSubmit}
           isLoading={createMutation.isPending || updateMutation.isPending}
+        />
+      )}
+
+      {/* Section Roster Management (Student Picker) */}
+      {rosterSection && (
+        <SectionRosterModal
+          key={rosterSection.sectionId}
+          isOpen={Boolean(rosterSection)}
+          onClose={() => setRosterSection(null)}
+          section={rosterSection}
+          deanDepartment={user?.department}
+          isAvp={isAvp}
         />
       )}
 

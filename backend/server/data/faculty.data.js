@@ -1,12 +1,24 @@
 const faculty = [
   {
+    facultyId: "AVP-2026-001",
+    name: "Dr. Roberto Santos",
+    email: "roberto.santos@university.edu",
+    department: "Academic Affairs",
+    position: "AVP",
+    employmentType: "FULL_TIME",
+    specialization: "Educational Leadership & Curriculum Governance",
+    employmentStatus: "ACTIVE",
+    assignedSubjects: [],
+    updatedAt: "2026-09-01T08:00:00Z"
+  },
+  {
     facultyId: "FAC-2026-001",
     name: "Maria Dela Cruz",
     email: "maria.delacruz@university.edu",
     department: "Information Technology",
     position: "DEAN",
     employmentType: "FULL_TIME",
-    specialization: "Web Development",
+    specialization: "Web & Software Engineering",
     employmentStatus: "ACTIVE",
     assignedSubjects: [
       {
@@ -25,6 +37,66 @@ const faculty = [
     updatedAt: "2026-09-05T10:30:00Z"
   },
   {
+    facultyId: "FAC-2026-004",
+    name: "Dr. Arthur Pendelton",
+    email: "arthur.pendelton@university.edu",
+    department: "Business Administration",
+    position: "DEAN",
+    employmentType: "FULL_TIME",
+    specialization: "Strategic Marketing & Operations",
+    employmentStatus: "ACTIVE",
+    assignedSubjects: [],
+    updatedAt: "2026-09-05T09:00:00Z"
+  },
+  {
+    facultyId: "FAC-2026-005",
+    name: "Chef Elena Gomez",
+    email: "elena.gomez@university.edu",
+    department: "Hospitality and Tourism Management",
+    position: "DEAN",
+    employmentType: "FULL_TIME",
+    specialization: "Culinary Arts & Hotel Operations",
+    employmentStatus: "ACTIVE",
+    assignedSubjects: [],
+    updatedAt: "2026-09-05T09:00:00Z"
+  },
+  {
+    facultyId: "FAC-2026-006",
+    name: "Dr. Teresa Aquino",
+    email: "teresa.aquino@university.edu",
+    department: "Teacher Education",
+    position: "DEAN",
+    employmentType: "FULL_TIME",
+    specialization: "Educational Pedagogy & Assessment",
+    employmentStatus: "ACTIVE",
+    assignedSubjects: [],
+    updatedAt: "2026-09-05T09:00:00Z"
+  },
+  {
+    facultyId: "FAC-2026-007",
+    name: "Atty. Danilo Ramos",
+    email: "danilo.ramos@university.edu",
+    department: "Criminology",
+    position: "DEAN",
+    employmentType: "FULL_TIME",
+    specialization: "Criminal Law & Forensic Investigation",
+    employmentStatus: "ACTIVE",
+    assignedSubjects: [],
+    updatedAt: "2026-09-05T09:00:00Z"
+  },
+  {
+    facultyId: "FAC-2026-008",
+    name: "Prof. Grace Bautista",
+    email: "grace.bautista@university.edu",
+    department: "General Education",
+    position: "DEAN",
+    employmentType: "FULL_TIME",
+    specialization: "Humanities & Social Sciences",
+    employmentStatus: "ACTIVE",
+    assignedSubjects: [],
+    updatedAt: "2026-09-05T09:00:00Z"
+  },
+  {
     facultyId: "FAC-2026-002",
     name: "Juan Reyes",
     email: "juan.reyes@university.edu",
@@ -37,17 +109,125 @@ const faculty = [
     updatedAt: "2026-09-05T10:30:00Z"
   },
   {
-  "facultyId": "FAC-2026-003",
-  "name": "Maria Santos",
-  "email": "maria.santos@university.edu",
-  "department": "Information Technology",
-  "position": "SENIOR_FACULTY",
-  "employmentType": "FULL_TIME",
-  "specialization": "Web Development",
-  "employmentStatus": "ACTIVE",
-  "assignedSubjects": [],
-  "updatedAt": "2026-10-15T01:00:00Z"
-}
+    facultyId: "FAC-2026-003",
+    name: "Maria Santos",
+    email: "maria.santos@university.edu",
+    department: "Information Technology",
+    position: "FACULTY",
+    employmentType: "FULL_TIME",
+    specialization: "Mobile Development",
+    employmentStatus: "ACTIVE",
+    assignedSubjects: [],
+    updatedAt: "2026-10-15T01:00:00Z"
+  },
+  {
+    facultyId: "FAC-2026-009",
+    name: "Prof. Mark Dalisay",
+    email: "mark.dalisay@university.edu",
+    department: "General Education",
+    position: "FACULTY",
+    employmentType: "FULL_TIME",
+    specialization: "Purposive Communication & Ethics",
+    employmentStatus: "ACTIVE",
+    assignedSubjects: [],
+    updatedAt: "2026-09-05T10:30:00Z"
+  },
+  {
+    facultyId: "FAC-2026-010",
+    name: "Prof. Carmen Diaz",
+    email: "carmen.diaz@university.edu",
+    department: "Business Administration",
+    position: "FACULTY",
+    employmentType: "FULL_TIME",
+    specialization: "Financial Accounting & Business Ethics",
+    employmentStatus: "ACTIVE",
+    assignedSubjects: [],
+    updatedAt: "2026-09-05T10:30:00Z"
+  },
+  {
+    facultyId: "FAC-2026-011",
+    name: "Prof. Manuel Roxas",
+    email: "manuel.roxas@university.edu",
+    department: "Business Administration",
+    position: "FACULTY",
+    employmentType: "FULL_TIME",
+    specialization: "Marketing Management & E-Commerce",
+    employmentStatus: "ACTIVE",
+    assignedSubjects: [],
+    updatedAt: "2026-09-05T10:30:00Z"
+  },
+  {
+    facultyId: "FAC-2026-012",
+    name: "Prof. Fernando Poe",
+    email: "fernando.poe@university.edu",
+    department: "Hospitality and Tourism Management",
+    position: "FACULTY",
+    employmentType: "FULL_TIME",
+    specialization: "Food and Beverage Operations",
+    employmentStatus: "ACTIVE",
+    assignedSubjects: [],
+    updatedAt: "2026-09-05T10:30:00Z"
+  },
+  {
+    facultyId: "FAC-2026-013",
+    name: "Prof. Vilma Santos",
+    email: "vilma.santos@university.edu",
+    department: "Hospitality and Tourism Management",
+    position: "FACULTY",
+    employmentType: "FULL_TIME",
+    specialization: "Hospitality Management & Tourism Planning",
+    employmentStatus: "ACTIVE",
+    assignedSubjects: [],
+    updatedAt: "2026-09-05T10:30:00Z"
+  },
+  {
+    facultyId: "FAC-2026-014",
+    name: "Prof. Lualhati Bautista",
+    email: "lualhati.bautista@university.edu",
+    department: "Teacher Education",
+    position: "FACULTY",
+    employmentType: "FULL_TIME",
+    specialization: "Curriculum Development & Literacy",
+    employmentStatus: "ACTIVE",
+    assignedSubjects: [],
+    updatedAt: "2026-09-05T10:30:00Z"
+  },
+  {
+    facultyId: "FAC-2026-015",
+    name: "Prof. Jose Rizal",
+    email: "jose.rizal@university.edu",
+    department: "Teacher Education",
+    position: "FACULTY",
+    employmentType: "FULL_TIME",
+    specialization: "Social Studies & Pedagogy",
+    employmentStatus: "ACTIVE",
+    assignedSubjects: [],
+    updatedAt: "2026-09-05T10:30:00Z"
+  },
+  {
+    facultyId: "FAC-2026-016",
+    name: "Col. Ramon Santos",
+    email: "ramon.santos@university.edu",
+    department: "Criminology",
+    position: "FACULTY",
+    employmentType: "FULL_TIME",
+    specialization: "Forensic Ballistics & Crime Scene Investigation",
+    employmentStatus: "ACTIVE",
+    assignedSubjects: [],
+    updatedAt: "2026-09-05T10:30:00Z"
+  },
+  {
+    facultyId: "FAC-2026-017",
+    name: "Prof. Miriam Defensor",
+    email: "miriam.defensor@university.edu",
+    department: "Criminology",
+    position: "FACULTY",
+    employmentType: "FULL_TIME",
+    specialization: "Criminal Law & Juvenile Justice",
+    employmentStatus: "ACTIVE",
+    assignedSubjects: [],
+    updatedAt: "2026-09-05T10:30:00Z"
+  }
 ];
 
 module.exports = faculty;

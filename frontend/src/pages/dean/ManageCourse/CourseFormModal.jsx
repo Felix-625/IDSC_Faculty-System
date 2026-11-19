@@ -6,10 +6,12 @@ import { Button } from '../../../components/common/Button';
 import styles from './CourseFormModal.module.css';
 
 const DEPARTMENT_OPTIONS = [
-  { value: 'Information Technology', label: 'Information Technology' },
-  { value: 'Computer Science', label: 'Computer Science' },
-  { value: 'Information Studies', label: 'Information Studies' },
-  { value: 'General Education', label: 'General Education' },
+  { value: 'Information Technology', label: 'College of Information Technology' },
+  { value: 'Business Administration', label: 'College of Business Administration' },
+  { value: 'Hospitality and Tourism Management', label: 'College of Hospitality & Tourism Management' },
+  { value: 'Teacher Education', label: 'College of Teacher Education' },
+  { value: 'Criminology', label: 'College of Criminology' },
+  { value: 'General Education', label: 'Department of General Education' },
 ];
 
 const STATUS_OPTIONS = [
@@ -17,13 +19,21 @@ const STATUS_OPTIONS = [
   { value: 'INACTIVE', label: 'INACTIVE' },
 ];
 
-export function CourseFormModal({ isOpen, onClose, initialData, onSubmit, isLoading }) {
+export function CourseFormModal({
+  isOpen,
+  onClose,
+  initialData,
+  onSubmit,
+  isLoading,
+  deanDepartment,
+  isAvp = false,
+}) {
   const isEdit = Boolean(initialData);
 
   const [formData, setFormData] = useState(() => ({
     programCode: initialData?.programCode || '',
     programName: initialData?.programName || '',
-    department: initialData?.department || 'Information Technology',
+    department: initialData?.department || deanDepartment || 'Information Technology',
     status: initialData?.status || 'ACTIVE',
   }));
 
@@ -99,12 +109,16 @@ export function CourseFormModal({ isOpen, onClose, initialData, onSubmit, isLoad
         </FormField>
 
         <div className={styles.row}>
-          <FormField label="Department" required>
+          <FormField
+            label="Department"
+            required
+            hint={!isAvp && deanDepartment ? `Scoped to your college department (${deanDepartment})` : undefined}
+          >
             <Select
               value={formData.department}
               onChange={(val) => setFormData((prev) => ({ ...prev, department: val }))}
               options={DEPARTMENT_OPTIONS}
-              disabled={isLoading}
+              disabled={(!isAvp && Boolean(deanDepartment)) || isLoading}
             />
           </FormField>
 

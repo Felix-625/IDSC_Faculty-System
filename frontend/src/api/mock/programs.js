@@ -6,27 +6,48 @@ let programsData = [
     status: 'ACTIVE',
   },
   {
-    programCode: 'BSCS',
-    programName: 'Bachelor of Science in Computer Science',
-    department: 'Computer Science',
+    programCode: 'BSBA',
+    programName: 'Bachelor of Science in Business Administration',
+    department: 'Business Administration',
     status: 'ACTIVE',
   },
   {
-    programCode: 'BLIS',
-    programName: 'Bachelor of Library and Information Science',
-    department: 'Information Studies',
+    programCode: 'BSHM',
+    programName: 'Bachelor of Science in Hospitality Management',
+    department: 'Hospitality and Tourism Management',
     status: 'ACTIVE',
   },
   {
-    programCode: 'ACT',
-    programName: 'Associate in Computer Technology',
-    department: 'Information Technology',
+    programCode: 'BSTM',
+    programName: 'Bachelor of Science in Tourism Management',
+    department: 'Hospitality and Tourism Management',
+    status: 'ACTIVE',
+  },
+  {
+    programCode: 'BSED',
+    programName: 'Bachelor of Secondary Education',
+    department: 'Teacher Education',
+    status: 'ACTIVE',
+  },
+  {
+    programCode: 'BSCRIM',
+    programName: 'Bachelor of Science in Criminology',
+    department: 'Criminology',
+    status: 'ACTIVE',
+  },
+  {
+    programCode: 'GENED',
+    programName: 'General Education Core & Minor Curricula',
+    department: 'General Education',
     status: 'ACTIVE',
   },
 ];
 
 export const mockPrograms = {
-  async list() {
+  async list(department) {
+    if (department && department !== 'ALL' && department !== 'Academic Affairs') {
+      return programsData.filter((p) => p.department === department);
+    }
     return [...programsData];
   },
 

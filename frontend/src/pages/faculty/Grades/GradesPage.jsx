@@ -112,7 +112,7 @@ export function GradesPage() {
       return {
         ...student,
         gradeRecord: matchGrade || null,
-        grade: matchGrade ? matchGrade.grade : null,
+        grade: matchGrade ? (matchGrade.grade ?? matchGrade.components?.final ?? null) : null,
         status: matchGrade ? matchGrade.status : 'PENDING',
         updatedAt: matchGrade ? matchGrade.updatedAt : null,
       };
@@ -165,10 +165,10 @@ export function GradesPage() {
 
   // Mutations
   const createGradeMutation = useMutation({
-    mutationFn: ({ studentId, grade }) =>
+    mutationFn: ({ studentId, gradePayload }) =>
       apiCreateGrade(facultyId, activeAssignment.courseCode, studentId, {
         assignmentId: activeAssignmentId,
-        grade,
+        ...gradePayload,
       }),
     onSuccess: (_, vars) => {
       toastSuccess('Grade posted successfully', `Student ${vars.studentId} grade is recorded.`);
@@ -181,10 +181,10 @@ export function GradesPage() {
   });
 
   const updateGradeMutation = useMutation({
-    mutationFn: ({ studentId, grade }) =>
+    mutationFn: ({ studentId, gradePayload }) =>
       apiUpdateGrade(facultyId, activeAssignment.courseCode, studentId, {
         assignmentId: activeAssignmentId,
-        grade,
+        ...gradePayload,
       }),
     onSuccess: (_, vars) => {
       toastSuccess('Grade updated successfully', `Student ${vars.studentId} grade updated.`);
@@ -232,23 +232,98 @@ export function GradesPage() {
     {
       key: 'studentId',
       header: 'Student ID',
-      width: '140px',
+      width: '130px',
       render: (row) => <code className={styles.idCode}>{row.studentId}</code>,
     },
     {
-      key: 'grade',
-      header: 'Grade',
-      width: '100px',
+      key: 'prelim',
+      header: 'Prelim',
+      width: '85px',
       render: (row) => (
-        <span className={row.grade ? styles.gradeValue : styles.gradeEmpty}>
-          {formatGrade(row.grade)}
+        <span className={styles.periodGrade}>
+          {formatGrade(row.gradeRecord?.components?.prelim)}
         </span>
       ),
     },
     {
+      key: 'midterm',
+      header: 'Midterm',
+      width: '85px',
+      render: (row) => (
+        <span className={styles.periodGrade}>
+          {formatGrade(row.gradeRecord?.components?.midterm)}
+        </span>
+      ),
+    },
+    {
+      key: 'preFinal',
+      header: 'Pre-Final',
+      width: '85px',
+      render: (row) => (
+        <span className={styles.periodGrade}>
+          {formatGrade(row.gradeRecord?.components?.preFinal)}
+        </span>
+      ),
+    },
+    {
+      key: 'grade',
+      header: 'Final Grade',
+      width: '105px',
+      render: (row) => {
+        const val = row.grade;
+        const isNonNum = val === 'INC' || val === 'DRP' || val === 'W';
+        return (
+          <span
+            className={
+              val
+                ? isNonNum
+                  ? styles.gradeNonNumeric
+                  : styles.gradeValue
+                : styles.gradeEmpty
+            }
+          >
+            {formatGrade(val)}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'remarks',
+      header: 'Remarks',
+      width: '120px',
+      render: (row) => {
+        const rem =
+          row.gradeRecord?.remarks ||
+          (row.grade
+            ? row.grade === 'INC'
+              ? 'INCOMPLETE'
+              : row.grade === 'DRP'
+              ? 'DROPPED'
+              : row.grade === 'W'
+              ? 'WITHDRAWN'
+              : row.grade <= 3.0
+              ? 'PASSED'
+              : 'FAILED'
+            : 'PENDING');
+        return (
+          <span
+            className={`${styles.remarksTag} ${
+              rem === 'PASSED'
+                ? styles.remarksPassed
+                : rem === 'FAILED'
+                ? styles.remarksFailed
+                : styles.remarksWarning
+            }`}
+          >
+            {rem}
+          </span>
+        );
+      },
+    },
+    {
       key: 'status',
       header: 'Status',
-      width: '120px',
+      width: '110px',
       render: (row) => {
         if (row.status === 'POSTED') {
           return <StatusChip status="Posted" variant="success" />;
@@ -493,21 +568,22 @@ export function GradesPage() {
             student={selectedStudentForAction}
             pendingStudents={pendingStudentsList}
             onSwitchToEdit={handleSwitchToEdit}
-            onSubmit={async (studentId, grade) => {
-              await createGradeMutation.mutateAsync({ studentId, grade });
+            onSubmit={async (studentId, gradePayload) => {
+              await createGradeMutation.mutateAsync({ studentId, gradePayload });
             }}
           />
 
           {/* Edit Grade Modal */}
           <EditGradeModal
-            key={(selectedStudentForAction?.studentId || 'edit') + '-' + String(selectedStudentForAction?.grade)}
+            key={(selectedStudentForAction?.studentId || 'edit') + '-' + String(selectedStudentForAction?.grade) + '-' + String(isEditModalOpen)}
             isOpen={isEditModalOpen}
             onClose={() => setIsEditModalOpen(false)}
             assignment={activeAssignment}
             student={selectedStudentForAction}
             currentGrade={selectedStudentForAction?.grade}
-            onSubmit={async (studentId, grade) => {
-              await updateGradeMutation.mutateAsync({ studentId, grade });
+            currentComponents={selectedStudentForAction?.gradeRecord?.components}
+            onSubmit={async (studentId, gradePayload) => {
+              await updateGradeMutation.mutateAsync({ studentId, gradePayload });
             }}
           />
         </>

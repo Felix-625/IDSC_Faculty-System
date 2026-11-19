@@ -12,6 +12,8 @@ export function SubjectFormModal({
   onClose,
   onSubmit, // async (data) => void
   initialData = null, // if provided -> edit mode
+  deanDepartment,
+  isAvp = false,
 }) {
   const isEdit = Boolean(initialData);
 
@@ -20,7 +22,7 @@ export function SubjectFormModal({
   const [description, setDescription] = useState(() => initialData?.description || '');
   const [units, setUnits] = useState(() => String(initialData?.units || '3'));
   const [department, setDepartment] = useState(
-    () => initialData?.department || 'Information Technology'
+    () => initialData?.department || deanDepartment || 'Information Technology'
   );
   const [semester, setSemester] = useState(
     () => initialData?.semester || CURRENT_TERM.semester
@@ -76,10 +78,12 @@ export function SubjectFormModal({
   ];
 
   const departmentOptions = [
-    { value: 'Information Technology', label: 'Information Technology' },
-    { value: 'Computer Science', label: 'Computer Science' },
-    { value: 'Information Studies', label: 'Information Studies' },
-    { value: 'General Education', label: 'General Education' },
+    { value: 'Information Technology', label: 'College of Information Technology' },
+    { value: 'Business Administration', label: 'College of Business Administration' },
+    { value: 'Hospitality and Tourism Management', label: 'College of Hospitality & Tourism Management' },
+    { value: 'Teacher Education', label: 'College of Teacher Education' },
+    { value: 'Criminology', label: 'College of Criminology' },
+    { value: 'General Education', label: 'Department of General Education (Minors)' },
   ];
 
   return (
@@ -154,13 +158,18 @@ export function SubjectFormModal({
           />
         </FormField>
 
-        <FormField label="Department / Course" id="department" required>
+        <FormField
+          label="Department / Course"
+          id="department"
+          required
+          hint={!isAvp && deanDepartment ? `Scoped to your college department (${deanDepartment})` : undefined}
+        >
           <Select
             id="department"
             value={department}
             onChange={setDepartment}
             options={departmentOptions}
-            disabled={isLoading}
+            disabled={(!isAvp && Boolean(deanDepartment)) || isLoading}
           />
         </FormField>
 

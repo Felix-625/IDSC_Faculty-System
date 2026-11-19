@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 
 export function Sidebar({ isOpen, onClose }) {
-  const { user, isDean, logout } = useAuth();
+  const { user, isDean, isAvp, logout } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -81,65 +81,104 @@ export function Sidebar({ isOpen, onClose }) {
             <span>Dashboard</span>
           </NavLink>
 
-          {/* Instructor Menu */}
-          <div className={styles.groupLabel}>INSTRUCTOR MENU</div>
-          <div className={styles.groupItems}>
-            <NavLink to="/subjects" className={navItemClass} onClick={onClose}>
-              <BookOpen size={18} />
-              <span>My Subjects</span>
-            </NavLink>
-            <NavLink to="/students" className={navItemClass} onClick={onClose}>
-              <Users size={18} />
-              <span>My Students</span>
-            </NavLink>
-            <NavLink to="/grades" className={navItemClass} onClick={onClose}>
-              <Award size={18} />
-              <span>Grade Management</span>
-            </NavLink>
-            <NavLink to="/schedule" className={navItemClass} onClick={onClose}>
-              <CalendarDays size={18} />
-              <span>My Schedule</span>
-            </NavLink>
-            <NavLink to="/salary" className={navItemClass} onClick={onClose}>
-              <Wallet size={18} />
-              <span>My Salary</span>
-            </NavLink>
-            <NavLink to="/announcements" className={navItemClass} onClick={onClose}>
-              <Megaphone size={18} />
-              <span>Announcements</span>
-            </NavLink>
-          </div>
-
-          {/* Dean Management (only visible to DEAN) */}
-          {isDean && (
+          {/* AVP Academic Council Menu */}
+          {isAvp ? (
             <>
-              <div className={styles.groupLabel}>DEAN MANAGEMENT</div>
+              <div className={styles.groupLabel}>ACADEMIC COUNCIL</div>
               <div className={styles.groupItems}>
-                <NavLink to="/dean/faculty" className={navItemClass} onClick={onClose}>
+                <NavLink to="/avp/deans" className={navItemClass} onClick={onClose}>
                   <UserCheck size={18} />
-                  <span>Manage Faculty</span>
+                  <span>Manage Deans</span>
+                </NavLink>
+                <NavLink to="/dean/faculty" className={navItemClass} onClick={onClose}>
+                  <Users size={18} />
+                  <span>Faculty Directory</span>
                 </NavLink>
                 <NavLink to="/dean/courses" className={navItemClass} onClick={onClose}>
                   <GraduationCap size={18} />
-                  <span>Manage Course</span>
+                  <span>College Programs</span>
                 </NavLink>
                 <NavLink to="/dean/sections" className={navItemClass} onClick={onClose}>
                   <Layers size={18} />
-                  <span>Manage Sections</span>
+                  <span>Class Sections</span>
                 </NavLink>
                 <NavLink to="/dean/subjects" className={navItemClass} onClick={onClose}>
                   <BookOpen size={18} />
-                  <span>Manage Subjects</span>
+                  <span>Curriculum Catalog</span>
                 </NavLink>
                 <NavLink to="/dean/schedule" className={navItemClass} onClick={onClose}>
                   <Calendar size={18} />
-                  <span>Manage Schedule</span>
+                  <span>Institution Schedule</span>
                 </NavLink>
                 <NavLink to="/dean/announcements" className={navItemClass} onClick={onClose}>
                   <Megaphone size={18} />
-                  <span>Manage Announcements</span>
+                  <span>Council Memoranda</span>
                 </NavLink>
               </div>
+            </>
+          ) : (
+            <>
+              {/* Instructor Menu */}
+              <div className={styles.groupLabel}>INSTRUCTOR MENU</div>
+              <div className={styles.groupItems}>
+                <NavLink to="/subjects" className={navItemClass} onClick={onClose}>
+                  <BookOpen size={18} />
+                  <span>My Subjects</span>
+                </NavLink>
+                <NavLink to="/students" className={navItemClass} onClick={onClose}>
+                  <Users size={18} />
+                  <span>My Students</span>
+                </NavLink>
+                <NavLink to="/grades" className={navItemClass} onClick={onClose}>
+                  <Award size={18} />
+                  <span>Grade Management</span>
+                </NavLink>
+                <NavLink to="/schedule" className={navItemClass} onClick={onClose}>
+                  <CalendarDays size={18} />
+                  <span>My Schedule</span>
+                </NavLink>
+                <NavLink to="/salary" className={navItemClass} onClick={onClose}>
+                  <Wallet size={18} />
+                  <span>My Salary</span>
+                </NavLink>
+                <NavLink to="/announcements" className={navItemClass} onClick={onClose}>
+                  <Megaphone size={18} />
+                  <span>Announcements</span>
+                </NavLink>
+              </div>
+
+              {/* Dean Management (only visible to DEAN) */}
+              {isDean && (
+                <>
+                  <div className={styles.groupLabel}>DEAN MANAGEMENT</div>
+                  <div className={styles.groupItems}>
+                    <NavLink to="/dean/faculty" className={navItemClass} onClick={onClose}>
+                      <UserCheck size={18} />
+                      <span>Manage Faculty</span>
+                    </NavLink>
+                    <NavLink to="/dean/courses" className={navItemClass} onClick={onClose}>
+                      <GraduationCap size={18} />
+                      <span>Manage Course</span>
+                    </NavLink>
+                    <NavLink to="/dean/sections" className={navItemClass} onClick={onClose}>
+                      <Layers size={18} />
+                      <span>Manage Sections</span>
+                    </NavLink>
+                    <NavLink to="/dean/subjects" className={navItemClass} onClick={onClose}>
+                      <BookOpen size={18} />
+                      <span>Manage Subjects</span>
+                    </NavLink>
+                    <NavLink to="/dean/schedule" className={navItemClass} onClick={onClose}>
+                      <Calendar size={18} />
+                      <span>Manage Schedule</span>
+                    </NavLink>
+                    <NavLink to="/dean/announcements" className={navItemClass} onClick={onClose}>
+                      <Megaphone size={18} />
+                      <span>Manage Announcements</span>
+                    </NavLink>
+                  </div>
+                </>
+              )}
             </>
           )}
         </nav>

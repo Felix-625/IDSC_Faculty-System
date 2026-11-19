@@ -132,6 +132,15 @@
   border-color: var(--color-primary);
 }
 
+.rosterBtn {
+  color: var(--color-primary);
+}
+
+.rosterBtn:hover {
+  background-color: var(--color-primary-tint);
+  border-color: var(--color-primary);
+}
+
 .deleteBtn:hover {
   background-color: var(--color-danger-bg);
   color: var(--color-danger);

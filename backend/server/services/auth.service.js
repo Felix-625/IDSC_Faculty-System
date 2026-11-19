@@ -31,7 +31,8 @@ function login(facultyId, password) {
       facultyId: user.facultyId,
       name: user.name,
       email: user.email,
-      position: user.position
+      position: user.position,
+      department: user.department
     }
   };
 }

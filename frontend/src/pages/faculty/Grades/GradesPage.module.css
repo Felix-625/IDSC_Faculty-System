@@ -224,6 +224,43 @@
   color: var(--color-text-subtle);
 }
 
+.periodGrade {
+  font-family: monospace;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.gradeNonNumeric {
+  font-family: monospace;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-warning);
+}
+
+.remarksTag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+}
+
+.remarksPassed {
+  background-color: var(--color-primary-tint);
+  color: var(--color-primary);
+}
+
+.remarksFailed {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.remarksWarning {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
 .dateText {
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);

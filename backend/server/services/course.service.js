@@ -1,7 +1,10 @@
 const courses = require("../data/course.data");
 const faculty = require("../data/faculty.data");
 
-function getAllCourses() {
+function getAllCourses(department) {
+  if (department && department !== "ALL" && department !== "Academic Affairs") {
+    return courses.filter(course => course.department === department);
+  }
   return courses;
 }
 
