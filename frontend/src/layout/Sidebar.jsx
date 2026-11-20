@@ -16,6 +16,7 @@ import {
   Layers,
   Calendar,
   MoreVertical,
+  KeyRound,
   LogOut,
   X,
 } from 'lucide-react';
@@ -217,6 +218,19 @@ export function Sidebar({ isOpen, onClose }) {
               >
                 <LogOut size={16} />
                 <span>Log out</span>
+              </button>
+                            <button
+                type="button"
+                className={`${styles.menuItem} ${styles.menuItemNeutral}`}
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  onClose();
+                  navigate('/change-password');
+                }}
+                role="menuitem"
+              >
+                <KeyRound size={16} />
+                <span>Change password</span>
               </button>
             </div>
           )}

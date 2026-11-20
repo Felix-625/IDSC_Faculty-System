@@ -70,7 +70,7 @@ router.put("/:courseCode", requireRole("DEAN"), (req, res) => {
   res.json(updated);
 });
 
-router.delete("/:courseCode", requireRole("DEAN"), (req, res) => {
+router.delete("/:courseCode", requireRole("DEAN"), async (req, res) => {
   const existing = courseService.getCourseByCode(req.params.courseCode);
   if (!existing) return notFound(req, res);
 
@@ -79,7 +79,7 @@ router.delete("/:courseCode", requireRole("DEAN"), (req, res) => {
     return sendProblem(req, res, 403, "You can only delete courses belonging to your department.");
   }
 
-  if (courseService.isCourseAssigned(req.params.courseCode)) {
+    if (await courseService.isCourseAssigned(req.params.courseCode)) {
     return sendProblem(
       req, res, 409,
       `Course ${req.params.courseCode} is assigned to a faculty member. Mark it INACTIVE instead of deleting it.`

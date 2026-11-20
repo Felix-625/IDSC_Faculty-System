@@ -1,49 +1,62 @@
-const faculty = require("../data/faculty.data");
+const { User } = require("../models");
 const financeAdapter = require("../adapters/finance.adapter");
+const { generateTempPassword } = require("../utils/password");
 
-function getAllFaculty(department) {
+// Never send the password hash (or Mongo internals) to API clients.
+const PUBLIC_FIELDS = "-password -__v -_id";
+
+async function getAllFaculty(department) {
+  const filter = {};
   if (department && department !== "ALL" && department !== "Academic Affairs") {
-    return faculty.filter(item => item.department === department);
+    filter.department = department;
   }
-  return faculty;
+  return User.find(filter).select(PUBLIC_FIELDS).lean();
 }
 
-function getFacultyById(facultyId) {
-  return faculty.find(item => item.facultyId === facultyId);
+async function getFacultyById(facultyId) {
+  return User.findOne({ facultyId }).select(PUBLIC_FIELDS).lean();
 }
 
-function createFaculty(data) {
-  const item = {
+// Creates the account with a random temporary password, returned once.
+async function createFaculty(data) {
+  const temporaryPassword = generateTempPassword();
+  const user = await User.create({
     employmentStatus: "ACTIVE",
     ...data,
-    assignedSubjects: [],
-    updatedAt: new Date().toISOString()
-  };
-  faculty.push(item);
-  return item;
+    password: temporaryPassword,
+    mustChangePassword: true,
+    assignedSubjects: []
+  });
+  return { ...user.toJSON(), temporaryPassword };
 }
 
-function updateFaculty(facultyId, data) {
-  const index = faculty.findIndex(item => item.facultyId === facultyId);
-  if (index === -1) return null;
-
-  faculty[index] = {
-    ...faculty[index],
-    ...data,
-    facultyId,
-    assignedSubjects: faculty[index].assignedSubjects,
-    updatedAt: new Date().toISOString()
-  };
-  return faculty[index];
+async function updateFaculty(facultyId, data) {
+  // Only profile fields - not the password or assignments.
+  const { facultyId: _ignored, ...fields } = data;
+  return User.findOneAndUpdate(
+    { facultyId },
+    { $set: fields },
+    { returnDocument: "after", runValidators: true }
+  ).select(PUBLIC_FIELDS).lean();
 }
 
-const SALARY_BY_TYPE = { FULL_TIME: 45000, PART_TIME: 25000, OTHER: 25000 };
+// Admin reset: new random temporary password, forced change at next login.
+async function resetPassword(facultyId) {
+  const user = await User.findOne({ facultyId });
+  if (!user) return null;
+
+  const temporaryPassword = generateTempPassword();
+  user.password = temporaryPassword;
+  user.mustChangePassword = true;
+  await user.save();
+  return { facultyId, temporaryPassword };
+}
 
 async function getSalary(facultyId) {
-  const item = getFacultyById(facultyId);
+  const item = await getFacultyById(facultyId);
   if (!item) return null;
 
   return await financeAdapter.getFacultySalary(facultyId, item.employmentType);
 }
 
-module.exports = { getAllFaculty, getFacultyById, createFaculty, updateFaculty, getSalary };
+module.exports = { getAllFaculty, getFacultyById, createFaculty, updateFaculty, resetPassword, getSalary };

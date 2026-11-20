@@ -208,6 +208,14 @@
   background-color: var(--color-danger-bg);
 }
 
+.menuItemNeutral {
+  color: var(--color-text-body);
+}
+
+.menuItemNeutral:hover {
+  background-color: var(--color-bg-subtle);
+}
+
 /* Tablet / Mobile Slide-over */
 @media (max-width: 1024px) {
   .sidebar {

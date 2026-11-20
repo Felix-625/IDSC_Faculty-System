@@ -1,5 +1,5 @@
 const courses = require("../data/course.data");
-const faculty = require("../data/faculty.data");
+const { User } = require("../models");
 
 function getAllCourses(department) {
   if (department && department !== "ALL" && department !== "Academic Affairs") {
@@ -26,12 +26,11 @@ function updateCourse(courseCode, data) {
   return courses[index];
 }
 
-function isCourseAssigned(courseCode) {
-  return faculty.some(f =>
-    (f.assignedSubjects || []).some(
-      a => a.courseCode === courseCode && a.assignmentStatus === "ASSIGNED"
-    )
-  );
+async function isCourseAssigned(courseCode) {
+  const found = await User.exists({
+    assignedSubjects: { $elemMatch: { courseCode, assignmentStatus: "ASSIGNED" } }
+  });
+  return Boolean(found);
 }
 
 function deleteCourse(courseCode) {

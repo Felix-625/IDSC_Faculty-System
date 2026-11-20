@@ -1,25 +1,19 @@
-const crypto = require("crypto");
-const faculty = require("../data/faculty.data");
+const bcrypt = require("bcryptjs");
+const { User } = require("../models");
 const { signToken, EXPIRES_IN } = require("../utils/jwt");
 
-// DEMO ONLY: every account uses this password until a real credential table exists.
-const DEMO_PASSWORD = process.env.DEMO_PASSWORD || "Password123!";
+// Compared against when the ID is unknown, so "no such user" and "wrong password"
+// take about the same time and IDs can't be probed.
+const DUMMY_HASH = bcrypt.hashSync("not-a-real-password", 10);
 
-const hashPassword = (password, salt) => crypto.scryptSync(password, salt, 32);
+async function login(facultyId, password) {
+  const user = await User.findOne({ facultyId });
 
-const salt = crypto.randomBytes(16);
-const demoHash = hashPassword(DEMO_PASSWORD, salt);
-
-function passwordMatches(password) {
-  const candidate = hashPassword(String(password), salt);
-  return crypto.timingSafeEqual(candidate, demoHash);
-}
-
-function login(facultyId, password) {
-  const user = faculty.find(f => f.facultyId === facultyId);
-
-  // Same result for "unknown user" and "wrong password" so IDs can't be probed.
-  if (!user || !passwordMatches(password)) return null;
+  if (!user) {
+    await bcrypt.compare(String(password), DUMMY_HASH);
+    return null;
+  }
+  if (!(await user.matchPassword(String(password)))) return null;
 
   if (user.employmentStatus !== "ACTIVE") return { blocked: true };
 
@@ -27,6 +21,7 @@ function login(facultyId, password) {
     accessToken: signToken({ sub: user.facultyId, role: user.position }),
     tokenType: "Bearer",
     expiresIn: EXPIRES_IN,
+    mustChangePassword: user.mustChangePassword === true,
     user: {
       facultyId: user.facultyId,
       name: user.name,
@@ -37,4 +32,15 @@ function login(facultyId, password) {
   };
 }
 
-module.exports = { login };
+// Returns true on success, false if the current password is wrong.
+async function changePassword(facultyId, currentPassword, newPassword) {
+  const user = await User.findOne({ facultyId });
+  if (!user || !(await user.matchPassword(String(currentPassword)))) return false;
+
+  user.password = newPassword; // hashed by the pre-save hook
+  user.mustChangePassword = false;
+  await user.save();
+  return true;
+}
+
+module.exports = { login, changePassword };
