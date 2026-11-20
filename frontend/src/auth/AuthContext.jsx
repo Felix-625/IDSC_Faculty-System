@@ -7,7 +7,11 @@ import {
   clearStoredSession,
   setOnUnauthorized,
 } from '../api/client';
-import { login as apiLogin, getMe as apiGetMe } from '../api/auth';
+import {
+  login as apiLogin,
+  getMe as apiGetMe,
+  changePassword as apiChangePassword,
+} from '../api/auth';
 
 function parseJwtExp(token) {
   if (!token) return null;
@@ -53,7 +57,8 @@ export function AuthProvider({ children }) {
   const loginUser = useCallback(async (facultyId, password) => {
     setLogoutMessage(null);
     const res = await apiLogin(facultyId, password);
-    const { accessToken, user: basicUser } = res;
+    const { accessToken, mustChangePassword } = res;
+    const basicUser = { ...res.user, mustChangePassword: mustChangePassword === true };
     setStoredSession(accessToken, basicUser);
     setToken(accessToken);
     setSessionExpiry(parseJwtExp(accessToken));
@@ -71,6 +76,17 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+    // Sets the user's own password (current password required), then clears the "must change" flag.
+  const changeOwnPassword = useCallback(
+    async (currentPassword, newPassword) => {
+      await apiChangePassword(currentPassword, newPassword);
+      const updated = { ...user, mustChangePassword: false };
+      setStoredSession(getStoredToken(), updated);
+      setUser(updated);
+    },
+    [user]
+  );
+
   const isAvp = useMemo(() => user?.position === 'AVP', [user]);
   const isDean = useMemo(() => user?.position === 'DEAN' || user?.position === 'AVP', [user]);
 
@@ -80,6 +96,9 @@ export function AuthProvider({ children }) {
       user,
       isAvp,
       isDean,
+      mustChangePassword: user?.mustChangePassword === true,
+      changePassword: changeOwnPassword,
+      isAuthenticated: Boolean(token && user),
       isAuthenticated: Boolean(token && user),
       sessionExpiry,
       logoutMessage,
@@ -88,7 +107,7 @@ export function AuthProvider({ children }) {
       logout,
       setUser,
     }),
-    [token, user, isAvp, isDean, sessionExpiry, logoutMessage, loginUser, logout]
+    [token, user, isAvp, isDean, sessionExpiry, logoutMessage, loginUser, logout, changeOwnPassword]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -11,7 +11,7 @@ const GRADE_PATH = "/:facultyId/courses/:courseCode/students/:studentId/grade";
 
 // Checks the body, finds the faculty's assignment, and confirms the student is enrolled.
 // Returns { assignment, student } or sends the error response and returns null.
-function resolveForWrite(req, res) {
+async function resolveForWrite(req, res) {
   const { facultyId, courseCode, studentId } = req.params;
   const { assignmentId, grade, components } = req.body || {};
 
@@ -56,7 +56,7 @@ function resolveForWrite(req, res) {
     return null;
   }
 
-  const assignments = assignmentService.getAssignments(facultyId);
+  const assignments = await assignmentService.getAssignments(facultyId);
   if (!assignments) {
     sendProblem(req, res, 404, `Faculty ${facultyId} was not found.`);
     return null;
@@ -81,8 +81,8 @@ function resolveForWrite(req, res) {
   return { assignment, student };
 }
 
-router.post(GRADE_PATH, authenticate, requireSelfOrDean, (req, res) => {
-  const ctx = resolveForWrite(req, res);
+router.post(GRADE_PATH, authenticate, requireSelfOrDean, async (req, res) => {
+  const ctx = await resolveForWrite(req, res);
   if (!ctx) return;
 
   if (gradeService.findGrade(ctx.assignment.assignmentId, req.params.studentId)) {
@@ -99,8 +99,8 @@ router.post(GRADE_PATH, authenticate, requireSelfOrDean, (req, res) => {
   res.status(201).json(item);
 });
 
-router.put(GRADE_PATH, authenticate, requireSelfOrDean, (req, res) => {
-  const ctx = resolveForWrite(req, res);
+router.put(GRADE_PATH, authenticate, requireSelfOrDean, async (req, res) => {
+  const ctx = await resolveForWrite(req, res);
   if (!ctx) return;
 
   const existing = gradeService.findGrade(ctx.assignment.assignmentId, req.params.studentId);
@@ -118,10 +118,10 @@ router.put(GRADE_PATH, authenticate, requireSelfOrDean, (req, res) => {
 });
 
 // assignmentId (query) is optional when the faculty has only one assignment for that course.
-router.get(GRADE_PATH, authenticate, requireSelfOrDean, (req, res) => {
+router.get(GRADE_PATH, authenticate, requireSelfOrDean, async (req, res) => {
   const { facultyId, courseCode, studentId } = req.params;
 
-  const assignments = assignmentService.getAssignments(facultyId);
+  const assignments = await assignmentService.getAssignments(facultyId);
   if (!assignments) return sendProblem(req, res, 404, `Faculty ${facultyId} was not found.`);
 
   let candidates = assignments.filter(a => a.courseCode === courseCode);
@@ -143,10 +143,10 @@ router.get(GRADE_PATH, authenticate, requireSelfOrDean, (req, res) => {
   res.json(grade);
 });
 
-router.get("/:facultyId/subjects/:assignmentId/grades", authenticate, requireSelfOrDean, (req, res) => {
+router.get("/:facultyId/subjects/:assignmentId/grades", authenticate, requireSelfOrDean, async (req, res) => {
   const { facultyId, assignmentId } = req.params;
 
-  const assignments = assignmentService.getAssignments(facultyId);
+  const assignments = await assignmentService.getAssignments(facultyId);
   if (!assignments) return sendProblem(req, res, 404, `Faculty ${facultyId} was not found.`);
   if (!assignments.some(a => a.assignmentId === assignmentId)) {
     return sendProblem(req, res, 404, `Assignment ${assignmentId} was not found for faculty ${facultyId}.`);

@@ -1,8 +1,8 @@
 const { verifyToken } = require("../utils/jwt");
 const { sendProblem } = require("../utils/problem");
-const facultyData = require("../data/faculty.data");
+const { User } = require("../models");
 
-function authenticate(req, res, next) {
+async function authenticate(req, res, next) {
   const header = req.headers.authorization || "";
   const [scheme, token] = header.split(" ");
 
@@ -15,7 +15,8 @@ function authenticate(req, res, next) {
     return sendProblem(req, res, 401, "The access token is invalid or has expired.");
   }
 
-  const user = facultyData.find(f => f.facultyId === payload.sub);
+  const user = await User.findOne({ facultyId: payload.sub })
+    .select("facultyId position department employmentStatus").lean();
   if (!user || user.employmentStatus !== "ACTIVE") {
     return sendProblem(req, res, 401, "The account for this token is no longer active.");
   }
@@ -51,4 +52,12 @@ function requireSelfOrDean(req, res, next) {
   return sendProblem(req, res, 403, "Faculty members can only access their own records.");
 }
 
-module.exports = { authenticate, requireRole, requireSelfOrDean };
+// Account administrator: manages user accounts only (no grades, schedules, etc.).
+function requireAdmin(req, res, next) {
+  if (req.user.role !== "ADMIN") {
+    return sendProblem(req, res, 403, "Administrator access is required.");
+  }
+  next();
+}
+
+module.exports = { authenticate, requireRole, requireSelfOrDean, requireAdmin };

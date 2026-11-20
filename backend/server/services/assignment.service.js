@@ -1,4 +1,4 @@
-const faculty = require("../data/faculty.data");
+const { User } = require("../models");
 const courses = require("../data/course.data");
 
 const sameSlot = (a, b) =>
@@ -7,22 +7,23 @@ const sameSlot = (a, b) =>
   a.semester === b.semester &&
   a.academicYear === b.academicYear;
 
-function allAssignments() {
-  return faculty.flatMap(f => f.assignedSubjects || []);
+async function allFaculty() {
+  return User.find({}).select("facultyId assignedSubjects").lean();
 }
 
 // ASG-001, ASG-002, ... based on the highest existing number.
-function nextAssignmentId() {
-  const max = allAssignments().reduce((highest, a) => {
+function nextAssignmentId(everyone) {
+  const all = everyone.flatMap(f => f.assignedSubjects || []);
+  const max = all.reduce((highest, a) => {
     const n = parseInt(String(a.assignmentId).replace("ASG-", ""), 10);
     return Number.isNaN(n) ? highest : Math.max(highest, n);
   }, 0);
   return `ASG-${String(max + 1).padStart(3, "0")}`;
 }
 
-function getAssignments(facultyId) {
-  const f = faculty.find(item => item.facultyId === facultyId);
-  return f ? f.assignedSubjects || [] : null;
+async function getAssignments(facultyId) {
+  const f = await User.findOne({ facultyId }).select("assignedSubjects").lean();
+  return f ? (f.assignedSubjects || []).map(a => ({ ...a, facultyId })) : null;
 }
 
 // FacultyCourseItem is a trimmed view of the same assignment data.
@@ -31,8 +32,8 @@ function toCourseItem(a) {
   return { assignmentId, facultyId, courseCode, courseName, units, section, semester, academicYear };
 }
 
-function assignSubject(facultyId, { courseCode, section, semester, academicYear }) {
-  const f = faculty.find(item => item.facultyId === facultyId);
+async function assignSubject(facultyId, { courseCode, section, semester, academicYear }) {
+  const f = await User.findOne({ facultyId }).select("facultyId employmentStatus").lean();
   if (!f) return { error: "faculty-not-found" };
   if (f.employmentStatus !== "ACTIVE") return { error: "faculty-inactive" };
 
@@ -41,8 +42,9 @@ function assignSubject(facultyId, { courseCode, section, semester, academicYear 
   if (course.status !== "ACTIVE") return { error: "course-inactive" };
 
   const requested = { courseCode, section, semester, academicYear };
+  const everyone = await allFaculty();
 
-  for (const other of faculty) {
+  for (const other of everyone) {
     const clash = (other.assignedSubjects || []).find(
       a => a.assignmentStatus !== "CANCELLED" && sameSlot(a, requested)
     );
@@ -54,7 +56,7 @@ function assignSubject(facultyId, { courseCode, section, semester, academicYear 
   }
 
   const assignment = {
-    assignmentId: nextAssignmentId(),
+    assignmentId: nextAssignmentId(everyone),
     facultyId,
     courseCode,
     courseName: course.courseName,
@@ -66,23 +68,17 @@ function assignSubject(facultyId, { courseCode, section, semester, academicYear 
     assignedAt: new Date().toISOString()
   };
 
-  f.assignedSubjects = f.assignedSubjects || [];
-  f.assignedSubjects.push(assignment);
-  f.updatedAt = new Date().toISOString();
+  await User.updateOne({ facultyId }, { $push: { assignedSubjects: assignment } });
 
   return { assignment };
 }
 
-function removeAssignment(facultyId, assignmentId) {
-  const f = faculty.find(item => item.facultyId === facultyId);
-  if (!f) return false;
-
-  const index = (f.assignedSubjects || []).findIndex(a => a.assignmentId === assignmentId);
-  if (index === -1) return false;
-
-  f.assignedSubjects.splice(index, 1);
-  f.updatedAt = new Date().toISOString();
-  return true;
+async function removeAssignment(facultyId, assignmentId) {
+  const result = await User.updateOne(
+    { facultyId, "assignedSubjects.assignmentId": assignmentId },
+    { $pull: { assignedSubjects: { assignmentId } } }
+  );
+  return result.modifiedCount > 0;
 }
 
 module.exports = { getAssignments, toCourseItem, assignSubject, removeAssignment };

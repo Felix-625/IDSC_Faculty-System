@@ -28,6 +28,8 @@ info:
     name: Academic Project License
 
 servers:
+  - url: /api/v1
+    description: This server (use this one on the deployed site)
   - url: http://localhost:5000/api/v1
     description: Local development server
 
@@ -38,6 +40,8 @@ tags:
     description: API health check
   - name: Faculty Management
     description: Create, view and update faculty members (Dean)
+  - name: Admin - Account Management
+    description: Create and manage AVP, Dean and Faculty accounts (ADMIN only)
   - name: Faculty Salary
     description: Faculty salary information
   - name: Faculty Subject Assignments
@@ -1137,6 +1141,196 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /auth/password:
+    patch:
+      tags:
+        - Authentication
+      summary: Change your own password
+      description: >
+        Any logged-in user can set a new password. Accounts created by the
+        administrator start with a temporary password and must change it here
+        (or on the Change Password page of the portal) at first login.
+        Minimum 8 characters, and it must be different from the current password.
+      operationId: changePassword
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordPayload'
+      responses:
+        '204':
+          description: Password changed
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Missing/expired token, or the current password is incorrect
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /admin/users:
+    get:
+      tags:
+        - Admin - Account Management
+      summary: List all accounts
+      x-roles:
+        - ADMIN
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: department
+          in: query
+          required: false
+          schema:
+            type: string
+          example: Information Technology
+        - name: position
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [AVP, DEAN, FACULTY, ADMIN]
+      operationId: adminListUsers
+      responses:
+        '200':
+          description: List of accounts (password hashes are never returned)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacultyItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags:
+        - Admin - Account Management
+      summary: Create an AVP, Dean or Faculty account
+      description: >
+        Creates the account with a random temporary password. The temporary
+        password is shown ONLY in this response - copy it and give it to the
+        person privately. They must change it at first login.
+      x-roles:
+        - ADMIN
+      security:
+        - bearerAuth: []
+      operationId: adminCreateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminCreateUserPayload'
+            examples:
+              avp:
+                summary: AVP
+                value:
+                  facultyId: AVP-2026-001
+                  name: Juan Dela Cruz
+                  email: juan.delacruz@school.edu.ph
+                  department: Academic Affairs
+                  position: AVP
+                  employmentType: FULL_TIME
+              dean:
+                summary: Dean
+                value:
+                  facultyId: FAC-2026-001
+                  name: Maria Santos
+                  email: maria.santos@school.edu.ph
+                  department: Information Technology
+                  position: DEAN
+                  employmentType: FULL_TIME
+              faculty:
+                summary: Faculty member
+                value:
+                  facultyId: FAC-2026-002
+                  name: Pedro Reyes
+                  email: pedro.reyes@school.edu.ph
+                  department: Information Technology
+                  position: FACULTY
+                  employmentType: PART_TIME
+                  specialization: Networking
+      responses:
+        '201':
+          description: Account created. Includes temporaryPassword (shown once).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedAccount'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Faculty ID or email already exists
+  /admin/users/{facultyId}:
+    put:
+      tags:
+        - Admin - Account Management
+      summary: Edit an account or deactivate it
+      description: >
+        Send the full profile (same fields as when creating, without email being
+        required). To deactivate someone who left, set employmentStatus to
+        INACTIVE or RESIGNED - they can no longer log in. Does not change the password.
+      x-roles:
+        - ADMIN
+      security:
+        - bearerAuth: []
+      operationId: adminUpdateUser
+      parameters:
+        - $ref: '#/components/parameters/FacultyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewFacultyPayload'
+      responses:
+        '200':
+          description: Updated account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FacultyItem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Email already used by another account
+  /admin/users/{facultyId}/reset-password:
+    post:
+      tags:
+        - Admin - Account Management
+      summary: Reset a forgotten password
+      description: >
+        Issues a new random temporary password (shown once) and forces the
+        person to choose their own at next login.
+      x-roles:
+        - ADMIN
+      security:
+        - bearerAuth: []
+      operationId: adminResetPassword
+      parameters:
+        - $ref: '#/components/parameters/FacultyId'
+      responses:
+        '200':
+          description: New temporary password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemporaryPassword'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
 # =============================================================================
 # COMPONENTS
@@ -1305,6 +1499,9 @@ components:
           type: integer
           description: Seconds until the token expires.
           example: 3600
+        mustChangePassword:
+          type: boolean
+          description: true when the user is still on a temporary password and must change it.
         user:
           type: object
           properties:
@@ -1451,6 +1648,71 @@ components:
           - ON_LEAVE
           example: "ACTIVE"
 
+    ChangePasswordPayload:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+      properties:
+        currentPassword:
+          type: string
+          description: Your current (or temporary) password.
+        newPassword:
+          type: string
+          minLength: 8
+
+    AdminCreateUserPayload:
+      type: object
+      required:
+        - facultyId
+        - name
+        - email
+        - department
+        - position
+        - employmentType
+      properties:
+        facultyId:
+          type: string
+          example: FAC-2026-002
+        name:
+          type: string
+          example: Pedro Reyes
+        email:
+          type: string
+          format: email
+          example: pedro.reyes@school.edu.ph
+        department:
+          type: string
+          description: Must match the department name exactly (a Dean only sees faculty with the same department text).
+          example: Information Technology
+        position:
+          type: string
+          enum: [AVP, DEAN, FACULTY]
+        employmentType:
+          type: string
+          enum: [FULL_TIME, PART_TIME, OTHER]
+        specialization:
+          type: string
+          example: Networking
+
+    CreatedAccount:
+      allOf:
+        - $ref: '#/components/schemas/FacultyItem'
+        - type: object
+          properties:
+            temporaryPassword:
+              type: string
+              description: Shown once. Give it to the person privately.
+              example: Xk7mP2qRtN4w
+
+    TemporaryPassword:
+      type: object
+      properties:
+        facultyId:
+          type: string
+        temporaryPassword:
+          type: string
+          example: Xk7mP2qRtN4w
 
     # =========================================================================
     # SUBJECT ASSIGNMENT

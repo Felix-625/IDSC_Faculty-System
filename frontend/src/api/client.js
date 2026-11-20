@@ -70,7 +70,8 @@ export async function request(endpoint, options = {}) {
     );
   }
 
-  if (response.status === 401) {
+    // skipUnauthorizedHandler: a wrong current password also returns 401 and must not log the user out.
+  if (response.status === 401 && !options.skipUnauthorizedHandler) {
     clearStoredSession();
     if (onUnauthorizedCallback) {
       onUnauthorizedCallback();
@@ -110,5 +111,7 @@ export const api = {
     request(endpoint, { ...options, method: 'POST', body: JSON.stringify(body) }),
   put: (endpoint, body, options) =>
     request(endpoint, { ...options, method: 'PUT', body: JSON.stringify(body) }),
+  patch: (endpoint, body, options) =>
+    request(endpoint, { ...options, method: 'PATCH', body: JSON.stringify(body) }),
   delete: (endpoint, options) => request(endpoint, { ...options, method: 'DELETE' }),
 };

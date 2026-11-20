@@ -1,5 +1,5 @@
 const schedules = require("../data/schedule.data");
-const faculty = require("../data/faculty.data");
+const { User } = require("../models");
 const { DAYS } = require("../utils/validators");
 
 const toMinutes = t => Number(t.slice(0, 2)) * 60 + Number(t.slice(3));
@@ -30,14 +30,14 @@ function getScheduleById(scheduleId) {
   return schedules.find(s => s.scheduleId === scheduleId);
 }
 
-function getFacultySchedule(facultyId) {
-  if (!faculty.some(f => f.facultyId === facultyId)) return null;
+async function getFacultySchedule(facultyId) {
+  if (!(await User.exists({ facultyId }))) return null;
   return getSchedules({ facultyId });
 }
 
 // A schedule must belong to a subject the faculty member is actually assigned to.
-function findAssignment(facultyId, courseCode, section) {
-  const f = faculty.find(item => item.facultyId === facultyId);
+async function findAssignment(facultyId, courseCode, section) {
+  const f = await User.findOne({ facultyId }).select("assignedSubjects").lean();
   if (!f) return undefined;
   return (f.assignedSubjects || []).find(
     a => a.courseCode === courseCode && a.section === section && a.assignmentStatus === "ASSIGNED"
@@ -66,10 +66,10 @@ function findConflict(candidate, ignoreId) {
 }
 
 // Returns { schedule } or { error: "faculty-not-found" | "not-assigned" | "conflict", message }.
-function build(data, scheduleId, ignoreId) {
-  if (!faculty.some(f => f.facultyId === data.facultyId)) return { error: "faculty-not-found" };
+async function build(data, scheduleId, ignoreId) {
+  if (!(await User.exists({ facultyId: data.facultyId }))) return { error: "faculty-not-found" };
 
-  const assignment = findAssignment(data.facultyId, data.courseCode, data.section);
+  const assignment = await findAssignment(data.facultyId, data.courseCode, data.section);
   if (!assignment) return { error: "not-assigned" };
 
   const schedule = {
@@ -92,17 +92,17 @@ function build(data, scheduleId, ignoreId) {
   return { schedule };
 }
 
-function createSchedule(data) {
-  const result = build(data, nextScheduleId());
+async function createSchedule(data) {
+  const result = await build(data, nextScheduleId());
   if (result.schedule) schedules.push(result.schedule);
   return result;
 }
 
-function updateSchedule(scheduleId, data) {
+async function updateSchedule(scheduleId, data) {
   const index = schedules.findIndex(s => s.scheduleId === scheduleId);
   if (index === -1) return { error: "not-found" };
 
-  const result = build(data, scheduleId, scheduleId);
+  const result = await build(data, scheduleId, scheduleId);
   if (result.schedule) schedules[index] = result.schedule;
   return result;
 }

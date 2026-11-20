@@ -17,7 +17,7 @@ router.get("/:facultyId/courses/:courseCode/students", authenticate, requireSelf
     return sendProblem(req, res, 400, `Missing required query parameter(s): ${missing.join(", ")}.`);
   }
 
-  const assignments = assignmentService.getAssignments(facultyId);
+  const assignments = await assignmentService.getAssignments(facultyId);
   if (!assignments) return sendProblem(req, res, 404, `Faculty ${facultyId} was not found.`);
 
   const handled = assignments.some(

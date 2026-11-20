@@ -6,7 +6,7 @@ const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/auth.routes");
-
+const adminRoutes = require("./routes/admin.routes");
 const facultyRoutes = require("./routes/faculty.routes");
 const courseRoutes = require("./routes/course.routes");
 const studentRoutes = require("./routes/student.routes");
@@ -30,6 +30,7 @@ app.get("/api/v1/health", (req, res) => {
 });
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/faculty", facultyRoutes);
 app.use("/api/v1/courses", courseRoutes);
 app.use("/api/v1/faculty", studentRoutes);
@@ -41,10 +42,16 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 if (require.main === module) {
-  connectDB();
-  app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-    console.log(`Swagger UI: http://localhost:${PORT}/docs`);
+  // Accounts live in MongoDB now, so the server must not start without a connection.
+  connectDB().then(connected => {
+    if (!connected) {
+      console.error("Cannot start: MongoDB connection failed. Set MONGODB_URI and try again.");
+      process.exit(1);
+    }
+    app.listen(PORT, () => {
+      console.log(`Server running at http://localhost:${PORT}`);
+      console.log(`Swagger UI: http://localhost:${PORT}/docs`);
+    });
   });
 }
 

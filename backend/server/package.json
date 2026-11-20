@@ -7,6 +7,7 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "seed": "node scripts/seed.js",
+    "create-users": "node scripts/create-users.js",
     "lint:openapi": "redocly lint openapi.yaml"
   },
   "dependencies": {

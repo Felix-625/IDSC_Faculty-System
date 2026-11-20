@@ -29,7 +29,7 @@ function respondToFailure(req, res, result, data) {
   }
 }
 
-router.get("/schedules", authenticate, requireRole("DEAN"), (req, res) => {
+router.get("/schedules", authenticate, requireRole("DEAN"), async (req, res) => {
   const { section, facultyId, day } = req.query;
 
   if (day !== undefined && !DAYS.includes(day)) {
@@ -44,20 +44,20 @@ router.get("/schedules", authenticate, requireRole("DEAN"), (req, res) => {
 
   // If user is DEAN, scope schedules to faculties of their department
   if (req.user.role !== "AVP") {
-    const deptFaculties = new Set(facultyService.getAllFaculty(req.user.department).map(f => f.facultyId));
+      const deptFaculties = new Set((await facultyService.getAllFaculty(req.user.department)).map(f => f.facultyId));
     schedules = schedules.filter(s => deptFaculties.has(s.facultyId));
   }
 
   res.json(schedules);
 });
 
-router.post("/schedules", authenticate, requireRole("DEAN"), (req, res) => {
+router.post("/schedules", authenticate, requireRole("DEAN"), async (req, res) => {
   const data = pickSchedule(req.body || {});
 
   const errors = validateSchedule(data);
   if (errors.length) return sendProblem(req, res, 400, errors.join(" "), { errors });
 
-  const result = scheduleService.createSchedule(data);
+  const result = await scheduleService.createSchedule(data);
   if (result.error) return respondToFailure(req, res, result, data);
 
   res.status(201).json(result.schedule);
@@ -75,13 +75,13 @@ router.get("/schedules/:scheduleId", authenticate, requireRole("DEAN", "FACULTY"
   res.json(schedule);
 });
 
-router.put("/schedules/:scheduleId", authenticate, requireRole("DEAN"), (req, res) => {
+router.put("/schedules/:scheduleId", authenticate, requireRole("DEAN"), async (req, res) => {
   const data = pickSchedule(req.body || {});
 
   const errors = validateSchedule(data);
   if (errors.length) return sendProblem(req, res, 400, errors.join(" "), { errors });
 
-  const result = scheduleService.updateSchedule(req.params.scheduleId, data);
+  const result = await scheduleService.updateSchedule(req.params.scheduleId, data);
   if (result.error) return respondToFailure(req, res, result, data);
 
   res.json(result.schedule);
@@ -92,8 +92,8 @@ router.delete("/schedules/:scheduleId", authenticate, requireRole("DEAN"), (req,
   res.status(204).send();
 });
 
-router.get("/faculty/:facultyId/schedule", authenticate, requireSelfOrDean, (req, res) => {
-  const list = scheduleService.getFacultySchedule(req.params.facultyId);
+router.get("/faculty/:facultyId/schedule", authenticate, requireSelfOrDean, async (req, res) => {
+  const list = await scheduleService.getFacultySchedule(req.params.facultyId);
   if (!list) return sendProblem(req, res, 404, `Faculty ${req.params.facultyId} was not found.`);
   res.json(list);
 });

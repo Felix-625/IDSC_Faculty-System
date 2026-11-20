@@ -14,3 +14,6 @@ yarn-error.log*
 # OS Files
 .DS_Store
 Thumbs.db
+
+temp-passwords.csv
+data/real-users.json

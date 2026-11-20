@@ -7,7 +7,7 @@ import { AppShell } from './layout/AppShell';
 import { LoginPage } from './pages/Login/LoginPage';
 import { NotFoundPage } from './pages/NotFound/NotFoundPage';
 import { DashboardRouter } from './pages/DashboardRouter';
-
+import { ChangePasswordPage } from './pages/ChangePassword/ChangePasswordPage';
 import { SubjectsPage } from './pages/faculty/Subjects/SubjectsPage';
 import { StudentsPage } from './pages/faculty/Students/StudentsPage';
 import { GradesPage } from './pages/faculty/Grades/GradesPage';
@@ -45,6 +45,10 @@ export const routes = [
       {
         path: 'dashboard',
         element: <DashboardRouter />,
+      },
+            {
+        path: 'change-password',
+        element: <ChangePasswordPage />,
       },
       {
         path: 'subjects',

@@ -6,6 +6,7 @@ const assignedSubjectSchema = new mongoose.Schema(
     assignmentId: { type: String, required: true },
     courseCode: { type: String, required: true },
     courseName: { type: String, required: true },
+    facultyId: { type: String },    
     units: { type: Number, default: 3 },
     section: { type: String, required: true },
     semester: { type: String, default: "1st Semester" },
@@ -37,10 +38,15 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    // Stored as a bcrypt hash (see the pre-save hook below). Never returned by the API.
     password: {
       type: String,
       required: true,
-      default: "$2a$10$wE8TskN9M7xN3L5r5C9GqeZ.75pD1.7sP.9uI4zB4P7T2aD1mE5kO", // Default: Password123!
+    },
+    // true until the user sets their own password.
+    mustChangePassword: {
+      type: Boolean,
+      default: false,
     },
     department: {
       type: String,
@@ -50,7 +56,7 @@ const userSchema = new mongoose.Schema(
     position: {
       type: String,
       required: true,
-      enum: ["AVP", "DEAN", "COORDINATOR", "FACULTY", "PROFESSOR", "ASSOCIATE_PROFESSOR", "ASSISTANT_PROFESSOR", "INSTRUCTOR"],
+      enum: ["ADMIN", "AVP", "DEAN", "COORDINATOR", "FACULTY", "PROFESSOR", "ASSOCIATE_PROFESSOR", "ASSISTANT_PROFESSOR", "INSTRUCTOR"],
       default: "FACULTY",
     },
     employmentType: {
@@ -64,13 +70,21 @@ const userSchema = new mongoose.Schema(
     },
     employmentStatus: {
       type: String,
-      enum: ["ACTIVE", "INACTIVE", "ON_LEAVE"],
+      enum: ["ACTIVE", "INACTIVE","RESIGNED", "ON_LEAVE"],
       default: "ACTIVE",
     },
     assignedSubjects: [assignedSubjectSchema],
   },
   {
     timestamps: true,
+    toJSON: {
+      transform(doc, ret) {
+        delete ret.password;
+        delete ret.__v;
+        delete ret._id;
+        return ret;
+      },
+    },
   }
 );
 
