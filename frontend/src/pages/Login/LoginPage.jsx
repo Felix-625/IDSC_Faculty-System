@@ -4,7 +4,7 @@ import { useAuth } from '../../auth/useAuth';
 import { Button } from '../../components/common/Button';
 import { FormField } from '../../components/common/FormField';
 import styles from './LoginPage.module.css';
-import { Eye, EyeOff, AlertCircle, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, Info } from 'lucide-react';
 
 export function LoginPage() {
   const { login, logoutMessage, clearLogoutMessage } = useAuth();
@@ -16,7 +16,6 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
-  const [showDemoAccounts, setShowDemoAccounts] = useState(false);
 
   const from = location.state?.from?.pathname || '/dashboard';
 
@@ -49,13 +48,6 @@ export function LoginPage() {
     }
   };
 
-  const handleSelectDemo = (id, pw) => {
-    setFacultyId(id);
-    setPassword(pw);
-    setErrorMessage(null);
-  };
-
-  const isDev = import.meta.env.DEV;
 
   return (
     <div className={styles.loginWrapper}>
@@ -126,111 +118,6 @@ export function LoginPage() {
             Sign in
           </Button>
         </form>
-
-        {isDev && (
-          <div className={styles.demoSection}>
-            <button
-              type="button"
-              className={styles.demoToggle}
-              onClick={() => setShowDemoAccounts((prev) => !prev)}
-            >
-              <span>Demo accounts (dev only)</span>
-              {showDemoAccounts ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            </button>
-
-            {showDemoAccounts && (
-              <div className={styles.demoList}>
-                <div
-                  className={styles.demoItem}
-                  onClick={() => handleSelectDemo('AVP-2026-001', 'Password123!')}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className={styles.demoRole}>AVP (Executive Institutional)</div>
-                  <div className={styles.demoName}>Dr. Roberto Santos</div>
-                  <div className={styles.demoId}>AVP-2026-001</div>
-                </div>
-
-                <div
-                  className={styles.demoItem}
-                  onClick={() => handleSelectDemo('FAC-2026-001', 'Password123!')}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className={styles.demoRole}>DEAN (Information Technology)</div>
-                  <div className={styles.demoName}>Maria Dela Cruz</div>
-                  <div className={styles.demoId}>FAC-2026-001</div>
-                </div>
-
-                <div
-                  className={styles.demoItem}
-                  onClick={() => handleSelectDemo('FAC-2026-004', 'Password123!')}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className={styles.demoRole}>DEAN (Business Administration)</div>
-                  <div className={styles.demoName}>Dr. Arthur Pendelton</div>
-                  <div className={styles.demoId}>FAC-2026-004</div>
-                </div>
-
-                <div
-                  className={styles.demoItem}
-                  onClick={() => handleSelectDemo('FAC-2026-005', 'Password123!')}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className={styles.demoRole}>DEAN (Hospitality & Tourism)</div>
-                  <div className={styles.demoName}>Chef Elena Gomez</div>
-                  <div className={styles.demoId}>FAC-2026-005</div>
-                </div>
-
-                <div
-                  className={styles.demoItem}
-                  onClick={() => handleSelectDemo('FAC-2026-006', 'Password123!')}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className={styles.demoRole}>DEAN (Teacher Education)</div>
-                  <div className={styles.demoName}>Dr. Teresa Aquino</div>
-                  <div className={styles.demoId}>FAC-2026-006</div>
-                </div>
-
-                <div
-                  className={styles.demoItem}
-                  onClick={() => handleSelectDemo('FAC-2026-007', 'Password123!')}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className={styles.demoRole}>DEAN (Criminology)</div>
-                  <div className={styles.demoName}>Atty. Danilo Ramos</div>
-                  <div className={styles.demoId}>FAC-2026-007</div>
-                </div>
-
-                <div
-                  className={styles.demoItem}
-                  onClick={() => handleSelectDemo('FAC-2026-002', 'Password123!')}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className={styles.demoRole}>FACULTY (IT Instructor)</div>
-                  <div className={styles.demoName}>Juan Reyes</div>
-                  <div className={styles.demoId}>FAC-2026-002</div>
-                </div>
-
-                <div
-                  className={styles.demoItem}
-                  onClick={() => handleSelectDemo('FAC-2026-009', 'Password123!')}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className={styles.demoRole}>FACULTY (GenEd / Minor)</div>
-                  <div className={styles.demoName}>Prof. Mark Dalisay</div>
-                  <div className={styles.demoId}>FAC-2026-009</div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
