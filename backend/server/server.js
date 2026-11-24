@@ -23,6 +23,7 @@ app.use(cors());
 app.use(express.json());
 
 const swaggerDocument = YAML.load(path.join(__dirname, "openapi.yaml"));
+app.get("/", (req, res) => res.redirect("/docs"));
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.get("/api/v1/health", (req, res) => {
